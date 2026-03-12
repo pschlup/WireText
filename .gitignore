@@ -1,0 +1,12 @@
+.claude/
+.idea/
+/prds/
+build/
+*.iml
+out/
+.env
+local.properties
+.DS_Store
+
+CLAUDE.md
+PROJECT.md
