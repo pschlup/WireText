@@ -1,12 +1,39 @@
-.claude/
-.idea/
-/prds/
-build/
-*.iml
-out/
-.env
-local.properties
-.DS_Store
+# Dependencies
+node_modules/
 
+# Build output
+build/
+dist/
+out/
+
+# Environment and secrets
+.env
+.env.*
+local.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test and coverage
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Claude Code
+.claude/
 CLAUDE.md
 PROJECT.md
+
+# Project management
+/prds/
