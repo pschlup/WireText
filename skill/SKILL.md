@@ -27,27 +27,12 @@ Use the Write tool to save all the wiretext blocks into a single temporary `.md`
 /tmp/wiretext-preview.md
 ```
 
-### Step 3: Render to HTML via the WireText library
+### Step 3: Render to HTML via the WireText CLI
 
-Use the Bash tool to invoke the renderer. The project root is the WireText repo itself. The library is built to `dist/` as ESM.
+Use the Bash tool to invoke the `wiretext` renderer:
 
 ```bash
-node --input-type=module -e "
-import { Window } from 'happy-dom';
-import { readFileSync, writeFileSync } from 'fs';
-const win = new Window();
-Object.assign(globalThis, { document: win.document, window: win, HTMLElement: win.HTMLElement, Node: win.Node });
-const { parseDocument, renderDocument } = await import(
-  new URL('dist/index.js', 'file://' + process.cwd() + '/').href
-);
-const md = readFileSync('/tmp/wiretext-preview.md', 'utf-8');
-const { blocks, errors: parseErrors } = parseDocument(md);
-if (parseErrors.length) console.error('Parse errors:', JSON.stringify(parseErrors));
-const { html, errors: renderErrors } = renderDocument(blocks);
-if (renderErrors.length) console.error('Render errors:', JSON.stringify(renderErrors));
-writeFileSync('/tmp/wiretext-preview.html', html);
-console.log('Rendered ' + blocks.length + ' blocks to /tmp/wiretext-preview.html');
-"
+wiretext /tmp/wiretext-preview.md /tmp/wiretext-preview.html
 ```
 
 If there are parse or render errors, inspect them, fix the DSL, and re-render.
