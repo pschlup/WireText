@@ -41,7 +41,8 @@ export const WIRETEXT_CSS = `
 .wt-stat-delta-positive { color: var(--wiretext-color-success, #16A34A); }
 .wt-stat-delta-negative { color: var(--wiretext-color-danger, #DC2626); }
 .wt-stat-delta-neutral { color: var(--wiretext-color-muted, #6B7280); }
-.wt-chart-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px dashed var(--wiretext-color-border, #E5E7EB); border-radius: var(--wiretext-radius, 6px); background: var(--wiretext-color-surface, #fff); min-height: 160px; color: var(--wiretext-color-muted, #6B7280); gap: 0.5rem; }
+.wt-chart-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--wiretext-color-border, #E5E7EB); border-radius: var(--wiretext-radius, 6px); background: linear-gradient(90deg, var(--wiretext-color-surface, #fff) 25%, var(--wiretext-color-bg, #f9fafb) 50%, var(--wiretext-color-surface, #fff) 75%); background-size: 200% 100%; animation: wt-shimmer 1.5s ease-in-out infinite; min-height: 160px; color: var(--wiretext-color-muted, #6B7280); gap: 0.5rem; }
+@keyframes wt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 .wt-chart-type-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.6; }
 .wt-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
 .wt-table th { text-align: left; padding: 0.625rem 0.75rem; border-bottom: 2px solid var(--wiretext-color-border, #E5E7EB); font-weight: 600; color: var(--wiretext-color-text, #111827); }

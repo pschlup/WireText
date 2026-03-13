@@ -583,6 +583,17 @@ describe("data", () => {
     expect(element.getAttribute("data-chart-type")).toBe("line")
   })
 
+  it("chart placeholder element has skeleton CSS class", () => {
+    const { element } = render(makeNode("chart", "Revenue", { fields: ["bar"] }))
+    expect(element.classList.contains("wt-chart-placeholder")).toBe(true)
+    expect(element.classList.contains("wt-skeleton-chart")).toBe(true)
+    // Should not contain emoji text
+    const spans = element.querySelectorAll("span")
+    for (const span of spans) {
+      expect(span.textContent).not.toContain("\uD83D\uDCCA")
+    }
+  })
+
   it("calendar defaults to month view", () => {
     const { element } = render(makeNode("calendar", "Sprint Schedule"))
     // Month calendar renders a <table>
