@@ -37,3 +37,6 @@ PROJECT.md
 
 # Project management
 /prds/
+
+# Generated render output (from skill/render.ts)
+*.rendered.html
