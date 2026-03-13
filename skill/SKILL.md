@@ -33,8 +33,13 @@ Use the Bash tool to invoke the renderer. The project root is the WireText repo 
 
 ```bash
 node --input-type=module -e "
-import { parseDocument, renderDocument } from '/Users/pschlup/Projects/WireText/dist/index.js';
+import { Window } from 'happy-dom';
 import { readFileSync, writeFileSync } from 'fs';
+const win = new Window();
+Object.assign(globalThis, { document: win.document, window: win, HTMLElement: win.HTMLElement, Node: win.Node });
+const { parseDocument, renderDocument } = await import(
+  new URL('dist/index.js', 'file://' + process.cwd() + '/').href
+);
 const md = readFileSync('/tmp/wiretext-preview.md', 'utf-8');
 const { blocks, errors: parseErrors } = parseDocument(md);
 if (parseErrors.length) console.error('Parse errors:', JSON.stringify(parseErrors));
