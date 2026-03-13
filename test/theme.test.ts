@@ -61,9 +61,9 @@ describe("emitThemeCSS", () => {
 
   it("emits WebAwesome bridge variables", () => {
     const { styleBlock } = emitThemeCSS(SAAS_LIGHT)
-    expect(styleBlock).toContain("--wa-color-primary-500: var(--wiretext-color-primary)")
-    expect(styleBlock).toContain("--wa-color-danger-500: var(--wiretext-color-danger)")
-    expect(styleBlock).toContain("--wa-color-success-500: var(--wiretext-color-success)")
+    expect(styleBlock).toContain("--wa-color-brand: var(--wiretext-color-primary)")
+    expect(styleBlock).toContain("--wa-color-danger: var(--wiretext-color-danger)")
+    expect(styleBlock).toContain("--wa-color-success: var(--wiretext-color-success)")
     expect(styleBlock).toContain("--wa-border-radius-medium: var(--wiretext-radius)")
     expect(styleBlock).toContain("--wa-font-sans: var(--wiretext-font-family)")
   })

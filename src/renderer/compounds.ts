@@ -61,7 +61,7 @@ const KNOWN_SLOTS: Record<string, Set<string>> = {
   "signup-form":           new Set(["logo", "providers", "fields", "footer"]),
   "pricing-table":         new Set(["plan"]),
   "empty-state":           new Set(["icon", "text", "action"]),
-  "user-menu":             new Set(["items"]),
+  "user-menu":             new Set(["avatar", "items"]),
   "data-table":            new Set(["select", "columns", "row", "actions", "bulk-actions", "empty"]),
   "settings-form":         new Set(["section", "action"]),
   "file-upload":           new Set(["accept", "text"]),
@@ -367,12 +367,18 @@ COMPONENT_REGISTRY.set("user-menu", (node: ComponentNode, ctx: RenderContext): R
 
   const dropdown = document.createElement("wa-dropdown")
 
-  // Trigger: avatar with user name initials
+  // Trigger: avatar with user name initials; .avatar slot can override image
   const trigger = document.createElement("wa-avatar")
   trigger.setAttribute("slot", "trigger")
   trigger.className = "wt-user-menu-trigger"
-  const initials = node.text.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("")
-  trigger.setAttribute("initials", initials)
+  const avatarSlot = slot(node, "avatar")
+  if (avatarSlot && avatarSlot.fields[0]) {
+    trigger.setAttribute("src", avatarSlot.fields[0])
+    trigger.setAttribute("alt", avatarSlot.text || node.text)
+  } else {
+    const initials = node.text.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("")
+    trigger.setAttribute("initials", initials)
+  }
   trigger.setAttribute("label", node.text)
   dropdown.appendChild(trigger)
 
