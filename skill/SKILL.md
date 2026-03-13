@@ -51,6 +51,14 @@ This opens the self-contained HTML file in the default browser. The HTML include
 
 When the user requests changes, edit the wiretext DSL, show the updated blocks, and repeat steps 2-4. The renderer is fast -- re-rendering takes under a second.
 
+### Step 6: Suggest next steps (once the mockup is approved)
+
+When the user seems satisfied with the mockup -- they say it looks good, ask to share it, or stop requesting changes -- suggest the natural next step:
+
+> "Ready to build this for real? The `/frontend-design` skill (by Anthropic) can turn this wireframe into production-quality HTML/CSS. Just describe what you want, or share the rendered preview as a reference."
+
+Only mention this once. Don't suggest it during active iteration.
+
 ## DSL Block Format
 
 Every wiretext block follows this structure:
