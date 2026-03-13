@@ -244,6 +244,34 @@ describe("primitives", () => {
     expect(element.textContent).toBe("Featured")
   })
 
+  it("tag with variant=danger sets correct attribute", () => {
+    const { element, errors } = render(makeNode("tag", "High", { fields: ["danger"] }))
+    expect(element.tagName.toLowerCase()).toBe("wa-tag")
+    expect(element.getAttribute("variant")).toBe("danger")
+    expect(errors).toHaveLength(0)
+  })
+
+  it("tag with variant=warning sets correct attribute", () => {
+    const { element, errors } = render(makeNode("tag", "Medium", { fields: ["warning"] }))
+    expect(element.tagName.toLowerCase()).toBe("wa-tag")
+    expect(element.getAttribute("variant")).toBe("warning")
+    expect(errors).toHaveLength(0)
+  })
+
+  it("tag with no variant defaults to neutral", () => {
+    const { element, errors } = render(makeNode("tag", "Label"))
+    expect(element.tagName.toLowerCase()).toBe("wa-tag")
+    expect(element.getAttribute("variant")).toBe("neutral")
+    expect(errors).toHaveLength(0)
+  })
+
+  it("tag with variant=primary sets correct attribute", () => {
+    const { element, errors } = render(makeNode("tag", "Info", { fields: ["primary"] }))
+    expect(element.tagName.toLowerCase()).toBe("wa-tag")
+    expect(element.getAttribute("variant")).toBe("primary")
+    expect(errors).toHaveLength(0)
+  })
+
   it("item in tree parent → <wa-tree-item>", () => {
     const node = makeNode("item", "Home")
     const { element } = renderComponent(node, { ...DEFAULT_CTX, parentComponentType: "tree" })
