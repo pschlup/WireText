@@ -22,10 +22,18 @@ export function applyModifiers(el: HTMLElement, modifiers: Modifier[]): void {
   }
 }
 
-/** Attach a transition as a data attribute for the interaction system (epic-008). */
+/** Attach a transition as a data attribute for the interaction system (epic-008).
+ *  External URLs (https://, http://, //) are rendered directly as href + target="_blank"
+ *  so the output HTML is semantically correct even before JS runs. */
 export function applyTransition(el: HTMLElement, transition: Transition | null): void {
   if (!transition) return
-  el.dataset["wtTransition"] = JSON.stringify(transition)
+  if (transition.type === "external") {
+    el.setAttribute("href", transition.target)
+    el.setAttribute("target", "_blank")
+    el.setAttribute("rel", "noopener noreferrer")
+  } else {
+    el.dataset["wtTransition"] = JSON.stringify(transition)
+  }
 }
 
 /** Extract the badge count from modifiers, or null if none present. */

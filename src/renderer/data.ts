@@ -3,7 +3,29 @@
 import { COMPONENT_REGISTRY, renderComponent } from "./registry.js"
 import type { ComponentNode, ParseError } from "../types.js"
 import type { RenderContext, RenderResult } from "./registry.js"
-import { renderChildren } from "./utils.js"
+import { renderChildren, isActive } from "./utils.js"
+
+export const DATA_EXTRA_CSS = `
+.wt-timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.wt-timeline-item { display: flex; gap: 0.75rem; padding-bottom: 1.25rem; position: relative; }
+.wt-timeline-item:last-child { padding-bottom: 0; }
+.wt-timeline-spine { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+.wt-timeline-dot { width: 2rem; height: 2rem; border-radius: 50%; background: var(--wiretext-color-surface, #fff); border: 2px solid var(--wiretext-color-border, #E5E7EB); display: flex; align-items: center; justify-content: center; font-size: 0.875rem; color: var(--wiretext-color-muted, #6B7280); flex-shrink: 0; }
+.wt-timeline-dot.wt-current { border-color: var(--wiretext-color-primary, #2563EB); background: color-mix(in srgb, var(--wiretext-color-primary, #2563EB) 10%, transparent); color: var(--wiretext-color-primary, #2563EB); }
+.wt-timeline-line { width: 2px; flex: 1; background: var(--wiretext-color-border, #E5E7EB); margin-top: 0.25rem; min-height: 1rem; }
+.wt-timeline-content { flex: 1; padding-top: 0.25rem; }
+.wt-timeline-title { font-weight: 500; color: var(--wiretext-color-text, #111827); font-size: 0.875rem; }
+.wt-timeline-meta { font-size: 0.75rem; color: var(--wiretext-color-muted, #6B7280); margin-top: 0.125rem; }
+.wt-metric { display: flex; flex-direction: column; gap: 0.25rem; }
+.wt-metric-label { font-size: 0.875rem; color: var(--wiretext-color-muted, #6B7280); }
+.wt-metric-row { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+.wt-metric-value { font-size: 1.75rem; font-weight: 600; color: var(--wiretext-color-text, #111827); line-height: 1.2; }
+.wt-metric-delta { font-size: 0.875rem; font-weight: 500; }
+.wt-metric-delta.positive { color: var(--wiretext-color-success, #16A34A); }
+.wt-metric-delta.negative { color: var(--wiretext-color-danger, #DC2626); }
+.wt-metric-spark { height: 40px; overflow: hidden; margin-top: 0.25rem; }
+.wt-metric-spark svg { display: block; width: 100%; height: 40px; }
+`
 
 // ---------------------------------------------------------------------------
 // Realistic mock data generators — used when no children are provided
@@ -510,4 +532,176 @@ COMPONENT_REGISTRY.set("skeleton", (node: ComponentNode, _ctx: RenderContext): R
   }
 
   return { element: wrapper, errors: [] }
+})
+
+// ---------------------------------------------------------------------------
+// timeline — vertical timeline list with item children
+// Children: item nodes with text = event label, fields[0] = metadata, * = current
+// ~icon on item = icon in the timeline dot
+// ---------------------------------------------------------------------------
+COMPONENT_REGISTRY.set("timeline", (node: ComponentNode, _ctx: RenderContext): RenderResult => {
+  const list = document.createElement("ul")
+  list.className = "wt-timeline"
+
+  const items = node.children.length > 0 ? node.children : []
+
+  if (items.length === 0) {
+    // Default placeholder items
+    const defaults = [
+      { text: "Project launched", meta: "Mar 12, 2026", current: false },
+      { text: "Beta testing completed", meta: "Mar 10, 2026", current: true },
+      { text: "Development started", meta: "Mar 1, 2026", current: false },
+    ]
+    for (const d of defaults) {
+      const li = buildTimelineItem(d.text, d.meta, null, d.current)
+      list.appendChild(li)
+    }
+    return { element: list, errors: [] }
+  }
+
+  items.forEach((item, i) => {
+    const isCurrent = isActive(item.modifiers)
+    const meta = item.fields[0] ?? ""
+    const li = buildTimelineItem(item.text, meta, item.icon ?? null, isCurrent)
+    // No line connector after last item
+    if (i === items.length - 1) {
+      const spine = li.querySelector(".wt-timeline-spine")
+      const line = spine?.querySelector(".wt-timeline-line")
+      if (line) (line as HTMLElement).style.display = "none"
+    }
+    list.appendChild(li)
+  })
+
+  return { element: list, errors: [] }
+})
+
+function buildTimelineItem(text: string, meta: string, icon: string | null, isCurrent: boolean): HTMLElement {
+  const li = document.createElement("li")
+  li.className = "wt-timeline-item"
+
+  const spine = document.createElement("div")
+  spine.className = "wt-timeline-spine"
+
+  const dot = document.createElement("div")
+  dot.className = "wt-timeline-dot"
+  if (isCurrent) dot.classList.add("wt-current")
+  if (icon) {
+    const iconEl = document.createElement(`ph-${icon}`)
+    dot.appendChild(iconEl)
+  }
+  spine.appendChild(dot)
+
+  const line = document.createElement("div")
+  line.className = "wt-timeline-line"
+  spine.appendChild(line)
+
+  const content = document.createElement("div")
+  content.className = "wt-timeline-content"
+
+  const title = document.createElement("div")
+  title.className = "wt-timeline-title"
+  title.textContent = text
+  content.appendChild(title)
+
+  if (meta) {
+    const metaEl = document.createElement("div")
+    metaEl.className = "wt-timeline-meta"
+    metaEl.textContent = meta
+    content.appendChild(metaEl)
+  }
+
+  li.appendChild(spine)
+  li.appendChild(content)
+  return li
+}
+
+// ---------------------------------------------------------------------------
+// metric — stat card with sparkline SVG placeholder
+// text = label, fields[0] = value, fields[1] = delta, fields[2] = sparkline type (line/bar/area)
+// ---------------------------------------------------------------------------
+COMPONENT_REGISTRY.set("metric", (node: ComponentNode, _ctx: RenderContext): RenderResult => {
+  const el = document.createElement("div")
+  el.className = "wt-metric"
+
+  // Label
+  if (node.text) {
+    const label = document.createElement("div")
+    label.className = "wt-metric-label"
+    label.textContent = node.text
+    el.appendChild(label)
+  }
+
+  const row = document.createElement("div")
+  row.className = "wt-metric-row"
+
+  // Value
+  const valueEl = document.createElement("div")
+  valueEl.className = "wt-metric-value"
+  valueEl.textContent = node.fields[0] ?? "—"
+  row.appendChild(valueEl)
+
+  // Delta
+  const delta = node.fields[1]
+  if (delta) {
+    const deltaEl = document.createElement("div")
+    deltaEl.className = "wt-metric-delta"
+    const isPos = delta.startsWith("+")
+    const isNeg = delta.startsWith("-")
+    deltaEl.classList.add(isPos ? "positive" : isNeg ? "negative" : "")
+    deltaEl.textContent = delta
+    row.appendChild(deltaEl)
+  }
+
+  el.appendChild(row)
+
+  // Sparkline SVG placeholder
+  const sparkType = (node.fields[2] ?? "line").toLowerCase()
+  const spark = document.createElement("div")
+  spark.className = "wt-metric-spark"
+
+  const svgNS = "http://www.w3.org/2000/svg"
+  const svg = document.createElementNS(svgNS, "svg")
+  svg.setAttribute("viewBox", "0 0 120 40")
+  svg.setAttribute("preserveAspectRatio", "none")
+
+  if (sparkType === "bar") {
+    // Simple bar chart
+    const barData = [15, 28, 22, 35, 18, 42, 30, 45, 25, 38]
+    const barWidth = 8
+    const gap = 4
+    barData.forEach((h, i) => {
+      const rect = document.createElementNS(svgNS, "rect")
+      rect.setAttribute("x", String(i * (barWidth + gap) + 2))
+      rect.setAttribute("y", String(40 - h))
+      rect.setAttribute("width", String(barWidth))
+      rect.setAttribute("height", String(h))
+      rect.setAttribute("fill", "var(--wiretext-color-primary, #2563EB)")
+      rect.setAttribute("opacity", "0.6")
+      svg.appendChild(rect)
+    })
+  } else {
+    // Line or area chart
+    const points = [8,25,15,30,20,35,25,28,32,38,28,42].map((y, i) => `${i * 11},${40 - y}`).join(" ")
+    if (sparkType === "area") {
+      const area = document.createElementNS(svgNS, "polygon")
+      const areaPoints = `0,40 ${points} 120,40`
+      area.setAttribute("points", areaPoints)
+      area.setAttribute("fill", "var(--wiretext-color-primary, #2563EB)")
+      area.setAttribute("opacity", "0.15")
+      svg.appendChild(area)
+    }
+    const polyline = document.createElementNS(svgNS, "polyline")
+    polyline.setAttribute("points", points)
+    polyline.setAttribute("fill", "none")
+    polyline.setAttribute("stroke", "var(--wiretext-color-primary, #2563EB)")
+    polyline.setAttribute("stroke-width", "2")
+    polyline.setAttribute("stroke-linecap", "round")
+    polyline.setAttribute("stroke-linejoin", "round")
+    svg.appendChild(polyline)
+  }
+
+  spark.appendChild(svg)
+  el.appendChild(spark)
+
+  return { element: el, errors: [] }
 })

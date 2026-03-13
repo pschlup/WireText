@@ -6,17 +6,71 @@ import type { ComponentNode, ParseError, SlotNode } from "../types.js"
 import type { RenderContext, RenderResult } from "./registry.js"
 import { createIcon, applyTransition, isActive, isPrimary } from "./utils.js"
 
+// Extra CSS for new compound components.
+// Imported by zone-layout.ts for inclusion in WIRETEXT_CSS.
+export const COMPOUNDS_EXTRA_CSS = `
+.wt-hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 4rem 2rem; gap: 1.25rem; }
+.wt-hero-eyebrow { font-size: 0.875rem; font-weight: 600; color: var(--wiretext-color-primary, #2563EB); text-transform: uppercase; letter-spacing: 0.1em; }
+.wt-hero-heading { font-size: 2.5rem; font-weight: 700; color: var(--wiretext-color-text, #111827); line-height: 1.15; letter-spacing: -0.02em; max-width: 700px; margin: 0; }
+.wt-hero-subtext { font-size: 1.125rem; color: var(--wiretext-color-muted, #6B7280); max-width: 560px; margin: 0; line-height: 1.6; }
+.wt-hero-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
+.wt-hero-visual { margin-top: 1rem; width: 100%; max-width: 640px; min-height: 200px; background: var(--wiretext-color-bg, #f9fafb); border: 2px dashed var(--wiretext-color-border, #E5E7EB); border-radius: var(--wiretext-radius, 6px); display: flex; align-items: center; justify-content: center; color: var(--wiretext-color-muted, #6B7280); font-size: 3rem; }
+.wt-testimonial-grid { display: flex; gap: 1rem; flex-wrap: wrap; }
+.wt-testimonial-card { flex: 1; min-width: 220px; background: var(--wiretext-color-surface, #fff); border: 1px solid var(--wiretext-color-border, #E5E7EB); border-radius: var(--wiretext-radius, 6px); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.wt-testimonial-quote-text { font-size: 0.9375rem; color: var(--wiretext-color-text, #111827); line-height: 1.6; flex: 1; position: relative; padding-left: 1rem; }
+.wt-testimonial-quote-text::before { content: '"'; position: absolute; left: 0; top: -0.25rem; font-size: 1.5rem; color: var(--wiretext-color-primary, #2563EB); line-height: 1; }
+.wt-testimonial-author { display: flex; align-items: center; gap: 0.625rem; }
+.wt-testimonial-avatar { width: 2rem; height: 2rem; border-radius: 50%; background: color-mix(in srgb, var(--wiretext-color-primary, #2563EB) 15%, transparent); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; color: var(--wiretext-color-primary, #2563EB); flex-shrink: 0; }
+.wt-testimonial-name { font-weight: 600; font-size: 0.875rem; color: var(--wiretext-color-text, #111827); }
+.wt-testimonial-job { font-size: 0.75rem; color: var(--wiretext-color-muted, #6B7280); }
+.wt-feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; }
+.wt-feature-card { display: flex; flex-direction: column; gap: 0.625rem; padding: 1.25rem; background: var(--wiretext-color-surface, #fff); border: 1px solid var(--wiretext-color-border, #E5E7EB); border-radius: var(--wiretext-radius, 6px); }
+.wt-feature-icon { font-size: 1.5rem; color: var(--wiretext-color-primary, #2563EB); }
+.wt-feature-title { font-weight: 600; font-size: 0.9375rem; color: var(--wiretext-color-text, #111827); }
+.wt-feature-desc { font-size: 0.875rem; color: var(--wiretext-color-muted, #6B7280); line-height: 1.5; margin: 0; }
+.wt-logo-cloud { display: flex; flex-direction: column; align-items: center; gap: 1.25rem; padding: 2rem 1rem; }
+.wt-logo-cloud-label { font-size: 0.875rem; color: var(--wiretext-color-muted, #6B7280); font-weight: 500; text-align: center; }
+.wt-logo-cloud-row { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; justify-content: center; }
+.wt-logo-pill { display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 1.25rem; border: 1px solid var(--wiretext-color-border, #E5E7EB); border-radius: var(--wiretext-radius, 6px); font-size: 0.875rem; font-weight: 600; color: var(--wiretext-color-muted, #6B7280); background: var(--wiretext-color-surface, #fff); }
+.wt-onboarding-checklist { display: flex; flex-direction: column; gap: 0; }
+.wt-checklist-title { font-weight: 700; font-size: 1rem; color: var(--wiretext-color-text, #111827); margin: 0 0 0.75rem; }
+.wt-checklist-item { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid var(--wiretext-color-border, #E5E7EB); }
+.wt-checklist-item:last-child { border-bottom: none; }
+.wt-checklist-check { width: 1.25rem; height: 1.25rem; border-radius: 50%; border: 2px solid var(--wiretext-color-border, #E5E7EB); background: transparent; flex-shrink: 0; margin-top: 0.1rem; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; }
+.wt-checklist-check.wt-done { background: var(--wiretext-color-primary, #2563EB); border-color: var(--wiretext-color-primary, #2563EB); color: #fff; }
+.wt-checklist-item-title { font-weight: 500; font-size: 0.875rem; color: var(--wiretext-color-text, #111827); }
+.wt-checklist-item-title.wt-done { text-decoration: line-through; color: var(--wiretext-color-muted, #6B7280); }
+.wt-checklist-item-desc { font-size: 0.8125rem; color: var(--wiretext-color-muted, #6B7280); margin-top: 0.125rem; }
+.wt-command-palette { background: var(--wiretext-color-surface, #fff); border: 1px solid var(--wiretext-color-border, #E5E7EB); border-radius: calc(var(--wiretext-radius, 6px) + 4px); overflow: hidden; max-width: 540px; margin: 0 auto; box-shadow: 0 20px 60px -10px rgba(0,0,0,0.2); }
+.wt-command-search { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1rem; border-bottom: 1px solid var(--wiretext-color-border, #E5E7EB); }
+.wt-command-search-placeholder { flex: 1; font-size: 0.9375rem; color: var(--wiretext-color-muted, #6B7280); }
+.wt-command-results { padding: 0.375rem 0; }
+.wt-command-result { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 1rem; cursor: pointer; }
+.wt-command-result:hover { background: var(--wiretext-color-hover, rgba(0,0,0,0.05)); }
+.wt-command-result-icon { width: 1.5rem; height: 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: var(--wiretext-color-muted, #6B7280); flex-shrink: 0; }
+.wt-command-result-body { flex: 1; min-width: 0; }
+.wt-command-result-title { font-size: 0.875rem; font-weight: 500; color: var(--wiretext-color-text, #111827); }
+.wt-command-result-desc { font-size: 0.75rem; color: var(--wiretext-color-muted, #6B7280); }
+.wt-command-footer { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-top: 1px solid var(--wiretext-color-border, #E5E7EB); font-size: 0.75rem; color: var(--wiretext-color-muted, #6B7280); background: var(--wiretext-color-bg, #f9fafb); }
+`
+
 // Known slot sets per compound component.
 // Any slot name NOT in the set triggers a warning and its content is ignored.
 const KNOWN_SLOTS: Record<string, Set<string>> = {
-  "login-form":     new Set(["logo", "providers", "footer"]),
-  "signup-form":    new Set(["logo", "providers", "fields", "footer"]),
-  "pricing-table":  new Set(["plan"]),
-  "empty-state":    new Set(["icon", "text", "action"]),
-  "user-menu":      new Set(["items"]),
-  "data-table":     new Set(["select", "columns", "row", "actions", "bulk-actions", "empty"]),
-  "settings-form":  new Set(["section", "action"]),
-  "file-upload":    new Set(["accept", "text"]),
+  "login-form":            new Set(["logo", "providers", "footer"]),
+  "signup-form":           new Set(["logo", "providers", "fields", "footer"]),
+  "pricing-table":         new Set(["plan"]),
+  "empty-state":           new Set(["icon", "text", "action"]),
+  "user-menu":             new Set(["items"]),
+  "data-table":            new Set(["select", "columns", "row", "actions", "bulk-actions", "empty"]),
+  "settings-form":         new Set(["section", "action"]),
+  "file-upload":           new Set(["accept", "text"]),
+  "hero":                  new Set(["eyebrow", "heading", "subtext", "actions", "visual"]),
+  "testimonial":           new Set(["quote"]),
+  "feature-grid":          new Set(["feature"]),
+  "logo-cloud":            new Set(["logo"]),
+  "onboarding-checklist":  new Set(["item"]),
+  "command-palette":       new Set(["result", "footer"]),
 }
 
 /** Warn about and filter unrecognised slots for a compound component. */
@@ -719,3 +773,443 @@ COMPONENT_REGISTRY.set("file-upload", (node: ComponentNode, ctx: RenderContext):
 
   return { element: wrapper, errors }
 })
+
+// ---------------------------------------------------------------------------
+// hero — full-width landing page hero section
+// Slots: .eyebrow, .heading, .subtext, .actions (with button children), .visual
+// ---------------------------------------------------------------------------
+COMPONENT_REGISTRY.set("hero", (node: ComponentNode, ctx: RenderContext): RenderResult => {
+  const errors = validateSlots(node, "hero", ctx.blockPosition)
+
+  const el = document.createElement("div")
+  el.className = "wt-hero"
+
+  const eyebrowSlot = slot(node, "eyebrow")
+  if (eyebrowSlot) {
+    const eyebrow = document.createElement("div")
+    eyebrow.className = "wt-hero-eyebrow"
+    eyebrow.textContent = eyebrowSlot.text
+    el.appendChild(eyebrow)
+  }
+
+  const headingSlot = slot(node, "heading")
+  if (headingSlot) {
+    const h = document.createElement("h1")
+    h.className = "wt-hero-heading"
+    h.textContent = headingSlot.text
+    el.appendChild(h)
+  } else if (node.text) {
+    const h = document.createElement("h1")
+    h.className = "wt-hero-heading"
+    h.textContent = node.text
+    el.appendChild(h)
+  }
+
+  const subtextSlot = slot(node, "subtext")
+  if (subtextSlot) {
+    const p = document.createElement("p")
+    p.className = "wt-hero-subtext"
+    p.textContent = subtextSlot.text
+    el.appendChild(p)
+  }
+
+  const actionsSlot = slot(node, "actions")
+  if (actionsSlot) {
+    const actionsEl = document.createElement("div")
+    actionsEl.className = "wt-hero-actions"
+    for (const child of actionsSlot.children) {
+      const renderer = COMPONENT_REGISTRY.get(child.type)
+      if (renderer) {
+        const result = renderer(child, ctx)
+        errors.push(...result.errors)
+        actionsEl.appendChild(result.element)
+      }
+    }
+    // If no children, render the slot text as a button
+    if (actionsSlot.children.length === 0 && actionsSlot.text) {
+      const btn = document.createElement("wa-button")
+      btn.setAttribute("variant", "primary")
+      btn.textContent = actionsSlot.text
+      if (actionsSlot.transition) applyTransition(btn, actionsSlot.transition)
+      actionsEl.appendChild(btn)
+    }
+    el.appendChild(actionsEl)
+  }
+
+  const visualSlot = slot(node, "visual")
+  if (visualSlot) {
+    const visual = document.createElement("div")
+    visual.className = "wt-hero-visual"
+    if (visualSlot.icon) {
+      visual.appendChild(createIcon(visualSlot.icon))
+    } else if (visualSlot.text) {
+      // Treat text as icon name first, then as literal text
+      const iconEl = document.createElement(`ph-${visualSlot.text}`)
+      visual.appendChild(iconEl)
+    }
+    el.appendChild(visual)
+  }
+
+  return { element: el, errors }
+})
+
+// ---------------------------------------------------------------------------
+// testimonial — grid of quote cards
+// Slots: .quote text | Author | Job Title
+// Each .quote becomes a card with quoted text, author name, and job title
+// ---------------------------------------------------------------------------
+COMPONENT_REGISTRY.set("testimonial", (node: ComponentNode, ctx: RenderContext): RenderResult => {
+  const errors = validateSlots(node, "testimonial", ctx.blockPosition)
+
+  const grid = document.createElement("div")
+  grid.className = "wt-testimonial-grid"
+
+  const quoteSlots = slots(node, "quote")
+
+  for (const q of quoteSlots) {
+    const card = document.createElement("div")
+    card.className = "wt-testimonial-card"
+
+    const quoteText = document.createElement("div")
+    quoteText.className = "wt-testimonial-quote-text"
+    quoteText.textContent = q.text
+    card.appendChild(quoteText)
+
+    // Author info from fields
+    const authorName = q.fields[0]
+    const authorTitle = q.fields[1]
+
+    if (authorName || authorTitle) {
+      const authorEl = document.createElement("div")
+      authorEl.className = "wt-testimonial-author"
+
+      // Avatar with initials
+      const avatar = document.createElement("div")
+      avatar.className = "wt-testimonial-avatar"
+      const initials = (authorName ?? "?").split(/\s+/).slice(0, 2).map((w: string) => w[0]?.toUpperCase() ?? "").join("")
+      avatar.textContent = initials
+      authorEl.appendChild(avatar)
+
+      const authorMeta = document.createElement("div")
+      if (authorName) {
+        const nameEl = document.createElement("div")
+        nameEl.className = "wt-testimonial-name"
+        nameEl.textContent = authorName
+        authorMeta.appendChild(nameEl)
+      }
+      if (authorTitle) {
+        const titleEl = document.createElement("div")
+        titleEl.className = "wt-testimonial-job"
+        titleEl.textContent = authorTitle
+        authorMeta.appendChild(titleEl)
+      }
+      authorEl.appendChild(authorMeta)
+      card.appendChild(authorEl)
+    }
+
+    grid.appendChild(card)
+  }
+
+  // Default placeholder testimonial when no slots provided
+  if (quoteSlots.length === 0) {
+    const card = document.createElement("div")
+    card.className = "wt-testimonial-card"
+    const quoteText = document.createElement("div")
+    quoteText.className = "wt-testimonial-quote-text"
+    quoteText.textContent = "WireText transformed how our team communicates design intent"
+    card.appendChild(quoteText)
+    const authorEl = document.createElement("div")
+    authorEl.className = "wt-testimonial-author"
+    const avatar = document.createElement("div")
+    avatar.className = "wt-testimonial-avatar"
+    avatar.textContent = "AC"
+    authorEl.appendChild(avatar)
+    const authorMeta = document.createElement("div")
+    const nameEl = document.createElement("div")
+    nameEl.className = "wt-testimonial-name"
+    nameEl.textContent = "Alex Chen"
+    authorMeta.appendChild(nameEl)
+    const titleEl = document.createElement("div")
+    titleEl.className = "wt-testimonial-job"
+    titleEl.textContent = "Head of Design, Acme Corp"
+    authorMeta.appendChild(titleEl)
+    authorEl.appendChild(authorMeta)
+    card.appendChild(authorEl)
+    grid.appendChild(card)
+  }
+
+  return { element: grid, errors }
+})
+
+// ---------------------------------------------------------------------------
+// feature-grid — responsive grid of feature cards
+// Slots: .feature ~icon Title | description
+// ---------------------------------------------------------------------------
+COMPONENT_REGISTRY.set("feature-grid", (node: ComponentNode, ctx: RenderContext): RenderResult => {
+  const errors = validateSlots(node, "feature-grid", ctx.blockPosition)
+
+  const grid = document.createElement("div")
+  grid.className = "wt-feature-grid"
+
+  const featureSlots = slots(node, "feature")
+
+  if (featureSlots.length === 0) {
+    // Default 3-feature placeholder
+    const defaults = [
+      { icon: "lightning", title: "Fast", desc: "Generate UI mocks in seconds" },
+      { icon: "puzzle-piece", title: "Flexible", desc: "67 components for any UI" },
+      { icon: "code-simple", title: "Precise", desc: "AI edits surgically, not regenerating" },
+    ]
+    for (const d of defaults) {
+      const card = buildFeatureCard(d.icon, d.title, d.desc)
+      grid.appendChild(card)
+    }
+    return { element: grid, errors }
+  }
+
+  for (const feature of featureSlots) {
+    const card = buildFeatureCard(feature.icon ?? null, feature.text, feature.fields[0] ?? "")
+    grid.appendChild(card)
+  }
+
+  return { element: grid, errors }
+})
+
+function buildFeatureCard(icon: string | null, title: string, desc: string): HTMLElement {
+  const card = document.createElement("div")
+  card.className = "wt-feature-card"
+
+  if (icon) {
+    const iconWrap = document.createElement("div")
+    iconWrap.className = "wt-feature-icon"
+    iconWrap.appendChild(document.createElement(`ph-${icon}`))
+    card.appendChild(iconWrap)
+  }
+
+  const titleEl = document.createElement("div")
+  titleEl.className = "wt-feature-title"
+  titleEl.textContent = title
+  card.appendChild(titleEl)
+
+  if (desc) {
+    const descEl = document.createElement("p")
+    descEl.className = "wt-feature-desc"
+    descEl.textContent = desc
+    card.appendChild(descEl)
+  }
+
+  return card
+}
+
+// ---------------------------------------------------------------------------
+// logo-cloud — strip of company logo placeholders
+// text = optional label; .logo slots = company name pills
+// ---------------------------------------------------------------------------
+COMPONENT_REGISTRY.set("logo-cloud", (node: ComponentNode, ctx: RenderContext): RenderResult => {
+  const errors = validateSlots(node, "logo-cloud", ctx.blockPosition)
+
+  const wrap = document.createElement("div")
+  wrap.className = "wt-logo-cloud"
+
+  if (node.text) {
+    const label = document.createElement("div")
+    label.className = "wt-logo-cloud-label"
+    label.textContent = node.text
+    wrap.appendChild(label)
+  }
+
+  const row = document.createElement("div")
+  row.className = "wt-logo-cloud-row"
+
+  const logoSlots = slots(node, "logo")
+
+  if (logoSlots.length === 0) {
+    // Default placeholder logos
+    for (const name of ["Acme Corp", "Globex", "Initech", "Umbrella", "Oscorp"]) {
+      row.appendChild(buildLogoPill(name))
+    }
+  } else {
+    for (const logo of logoSlots) {
+      row.appendChild(buildLogoPill(logo.text))
+    }
+  }
+
+  wrap.appendChild(row)
+  return { element: wrap, errors }
+})
+
+function buildLogoPill(name: string): HTMLElement {
+  const pill = document.createElement("div")
+  pill.className = "wt-logo-pill"
+  pill.textContent = name
+  return pill
+}
+
+// ---------------------------------------------------------------------------
+// onboarding-checklist — vertical checklist with completed/pending states
+// text = title; .item slots — * = completed; fields[0] = description
+// ---------------------------------------------------------------------------
+COMPONENT_REGISTRY.set("onboarding-checklist", (node: ComponentNode, ctx: RenderContext): RenderResult => {
+  const errors = validateSlots(node, "onboarding-checklist", ctx.blockPosition)
+
+  const wrap = document.createElement("div")
+  wrap.className = "wt-onboarding-checklist"
+
+  if (node.text) {
+    const title = document.createElement("div")
+    title.className = "wt-checklist-title"
+    title.textContent = node.text
+    wrap.appendChild(title)
+  }
+
+  const itemSlots = slots(node, "item")
+
+  if (itemSlots.length === 0) {
+    // Default placeholder items
+    const defaults = [
+      { text: "Connect your repo", desc: "Completed", done: true },
+      { text: "Invite your team", desc: "Completed", done: true },
+      { text: "Set up integrations", desc: "Connect Slack, GitHub, Jira", done: false },
+      { text: "Start your first project", desc: "Create a project to begin", done: false },
+    ]
+    for (const d of defaults) {
+      wrap.appendChild(buildChecklistItem(d.text, d.desc, d.done))
+    }
+    return { element: wrap, errors }
+  }
+
+  for (const item of itemSlots) {
+    const isDone = isActive(item.modifiers)
+    const desc = item.fields[0] ?? ""
+    wrap.appendChild(buildChecklistItem(item.text, desc, isDone))
+  }
+
+  return { element: wrap, errors }
+})
+
+function buildChecklistItem(text: string, desc: string, isDone: boolean): HTMLElement {
+  const row = document.createElement("div")
+  row.className = "wt-checklist-item"
+
+  const check = document.createElement("div")
+  check.className = "wt-checklist-check"
+  if (isDone) {
+    check.classList.add("wt-done")
+    check.textContent = "✓"
+  }
+  row.appendChild(check)
+
+  const content = document.createElement("div")
+
+  const titleEl = document.createElement("div")
+  titleEl.className = "wt-checklist-item-title"
+  if (isDone) titleEl.classList.add("wt-done")
+  titleEl.textContent = text
+  content.appendChild(titleEl)
+
+  if (desc) {
+    const descEl = document.createElement("div")
+    descEl.className = "wt-checklist-item-desc"
+    descEl.textContent = desc
+    content.appendChild(descEl)
+  }
+
+  row.appendChild(content)
+  return row
+}
+
+// ---------------------------------------------------------------------------
+// command-palette — search dialog with result list
+// Slots: .result ~icon Title | description -> target, .footer text
+// ---------------------------------------------------------------------------
+COMPONENT_REGISTRY.set("command-palette", (node: ComponentNode, ctx: RenderContext): RenderResult => {
+  const errors = validateSlots(node, "command-palette", ctx.blockPosition)
+
+  const palette = document.createElement("div")
+  palette.className = "wt-command-palette"
+  palette.setAttribute("role", "dialog")
+  palette.setAttribute("aria-label", "Command palette")
+
+  // Search bar
+  const searchBar = document.createElement("div")
+  searchBar.className = "wt-command-search"
+  const searchIcon = document.createElement("ph-magnifying-glass")
+  searchIcon.style.cssText = "color: var(--wiretext-color-muted, #6B7280); font-size: 1rem;"
+  searchBar.appendChild(searchIcon)
+  const placeholder = document.createElement("div")
+  placeholder.className = "wt-command-search-placeholder"
+  placeholder.textContent = node.text || "Search commands..."
+  searchBar.appendChild(placeholder)
+  palette.appendChild(searchBar)
+
+  // Result items
+  const resultSlots = slots(node, "result")
+  const resultsEl = document.createElement("div")
+  resultsEl.className = "wt-command-results"
+  resultsEl.setAttribute("role", "listbox")
+
+  if (resultSlots.length === 0) {
+    // Default placeholder results
+    const defaults = [
+      { icon: "house", title: "Dashboard", desc: "Go to main dashboard" },
+      { icon: "users", title: "Team", desc: "Manage team members" },
+      { icon: "gear", title: "Settings", desc: "App preferences" },
+    ]
+    for (const d of defaults) {
+      resultsEl.appendChild(buildCommandResult(d.icon, d.title, d.desc, null))
+    }
+  } else {
+    for (const r of resultSlots) {
+      resultsEl.appendChild(buildCommandResult(r.icon ?? null, r.text, r.fields[0] ?? "", r.transition))
+    }
+  }
+
+  palette.appendChild(resultsEl)
+
+  // Footer
+  const footerSlot = slot(node, "footer")
+  const footer = document.createElement("div")
+  footer.className = "wt-command-footer"
+  footer.textContent = footerSlot?.text ?? "↑↓ Navigate · ↵ Open · Esc Close"
+  palette.appendChild(footer)
+
+  return { element: palette, errors }
+})
+
+function buildCommandResult(
+  icon: string | null,
+  title: string,
+  desc: string,
+  transition: import("../types.js").Transition | null,
+): HTMLElement {
+  const result = document.createElement("div")
+  result.className = "wt-command-result"
+  result.setAttribute("role", "option")
+
+  const iconWrap = document.createElement("div")
+  iconWrap.className = "wt-command-result-icon"
+  if (icon) {
+    iconWrap.appendChild(document.createElement(`ph-${icon}`))
+  }
+  result.appendChild(iconWrap)
+
+  const body = document.createElement("div")
+  body.className = "wt-command-result-body"
+
+  const titleEl = document.createElement("div")
+  titleEl.className = "wt-command-result-title"
+  titleEl.textContent = title
+  body.appendChild(titleEl)
+
+  if (desc) {
+    const descEl = document.createElement("div")
+    descEl.className = "wt-command-result-desc"
+    descEl.textContent = desc
+    body.appendChild(descEl)
+  }
+
+  result.appendChild(body)
+  applyTransition(result, transition)
+
+  return result
+}

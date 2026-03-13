@@ -159,7 +159,11 @@ export const INTERACTION_JS: string = /* javascript */ `
       closeCurrentOverlay();
     }
 
-    if (type === 'screen') {
+    if (type === 'external') {
+      // External URL — open in new tab. Elements with href already handle this natively;
+      // this fallback covers wa-button and other non-anchor elements.
+      window.open(target, '_blank', 'noopener,noreferrer');
+    } else if (type === 'screen') {
       navigateToScreen(target);
     } else if (type === 'overlay') {
       openOverlay(target);

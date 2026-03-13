@@ -26,7 +26,7 @@ const CSV_SLOT_NAMES = new Set(["items", "actions", "bulk-actions"])
 const ALLOWED_ZONES = new Set(["header", "sidebar", "main", "aside", "footer"])
 
 // Item-mode navigation components.
-const NAV_ITEM_TYPES = new Set(["nav", "tabs", "breadcrumb"])
+const NAV_ITEM_TYPES = new Set(["nav", "tabs", "breadcrumb", "stepper", "filter-bar", "bottom-nav"])
 
 // Valid root children for overlay blocks.
 const OVERLAY_ROOT_TYPES = new Set(["modal", "drawer", "alert"])

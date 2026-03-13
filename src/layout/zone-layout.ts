@@ -2,6 +2,12 @@
 // Maps ParsedBody zones to semantic HTML elements in a 12-column grid layout.
 import type { ParsedBody, ComponentNode, ParseError } from "../types.js"
 import { renderComponent, type RenderContext } from "../renderer/index.js"
+import { NAV_EXTRA_CSS } from "../renderer/navigation.js"
+import { DATA_EXTRA_CSS } from "../renderer/data.js"
+import { PRIMITIVES_EXTRA_CSS } from "../renderer/primitives.js"
+import { FORMS_EXTRA_CSS } from "../renderer/forms.js"
+import { CONTAINERS_EXTRA_CSS } from "../renderer/containers.js"
+import { COMPOUNDS_EXTRA_CSS } from "../renderer/compounds.js"
 
 export interface LayoutResult {
   element: HTMLElement
@@ -90,7 +96,7 @@ wa-card, wa-alert, .wt-stat, .wt-feed, .wt-chart-placeholder, .wt-table, .wt-dat
 wa-card:last-child, wa-alert:last-child, .wt-stat:last-child, .wt-feed:last-child, .wt-chart-placeholder:last-child, .wt-table:last-child, wa-details:last-child { margin-bottom: 0; }
 .wt-row { align-items: start; }
 .wt-text-center { text-align: center; }
-`
+` + NAV_EXTRA_CSS + DATA_EXTRA_CSS + PRIMITIVES_EXTRA_CSS + FORMS_EXTRA_CSS + CONTAINERS_EXTRA_CSS + COMPOUNDS_EXTRA_CSS
 
 // Zone name → number of columns it occupies by default
 const ZONE_DEFAULT_COLS: Record<string, number> = {

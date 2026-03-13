@@ -12,6 +12,14 @@ import {
   resolveVariant,
 } from "./utils.js"
 
+export const PRIMITIVES_EXTRA_CSS = `
+.wt-code-block { position: relative; background: var(--wiretext-color-bg, #f9fafb); border: 1px solid var(--wiretext-color-border, #E5E7EB); border-radius: var(--wiretext-radius, 6px); overflow: hidden; margin-bottom: 1rem; }
+.wt-code-header { display: flex; align-items: center; justify-content: space-between; padding: 0.375rem 0.75rem; background: var(--wiretext-color-surface, #fff); border-bottom: 1px solid var(--wiretext-color-border, #E5E7EB); }
+.wt-code-lang { font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--wiretext-color-muted, #6B7280); font-family: 'Menlo', 'Monaco', 'Courier New', monospace; }
+.wt-code-copy { font-size: 0.75rem; color: var(--wiretext-color-muted, #6B7280); cursor: pointer; opacity: 0.7; }
+.wt-code-content { padding: 0.75rem 1rem; font-family: 'Menlo', 'Monaco', 'Courier New', monospace; font-size: 0.8125rem; color: var(--wiretext-color-text, #111827); overflow-x: auto; white-space: pre; }
+`
+
 // ---------------------------------------------------------------------------
 // text — <p class="wt-text">
 // ---------------------------------------------------------------------------
@@ -26,10 +34,21 @@ COMPONENT_REGISTRY.set("text", (node: ComponentNode, _ctx: RenderContext): Rende
 // heading — <h1>-<h6> based on fields[0] level (default h2)
 // ---------------------------------------------------------------------------
 COMPONENT_REGISTRY.set("heading", (node: ComponentNode, _ctx: RenderContext): RenderResult => {
-  const level = parseInt(node.fields[0] ?? "2", 10)
+  // Bidirectional: detect if user wrote "heading 2 | Title" (number first)
+  // and swap so text becomes "Title" and level becomes 2
+  let rawLevel = node.fields[0] ?? "2"
+  let text = node.text
+  const textAsNum = parseInt(text, 10)
+  if (textAsNum >= 1 && textAsNum <= 6 && String(textAsNum) === text.trim()) {
+    // User wrote level as text and title as field — swap them
+    const origText = text
+    text = rawLevel
+    rawLevel = origText
+  }
+  const level = parseInt(rawLevel, 10)
   const safeLevel = isNaN(level) || level < 1 || level > 6 ? 2 : level
   const el = document.createElement(`h${safeLevel}`)
-  el.textContent = node.text
+  el.textContent = text
   return { element: el, errors: [] }
 })
 
@@ -263,6 +282,10 @@ COMPONENT_REGISTRY.set("item", (node: ComponentNode, ctx: RenderContext): Render
   if (parent === "feed") {
     const li = document.createElement("li")
     li.className = "wt-feed-item"
+    // Icon or avatar for feed items
+    if (node.icon) {
+      li.appendChild(createIcon(node.icon))
+    }
     const content = document.createElement("div")
     content.className = "wt-feed-item-content"
     content.textContent = node.text
@@ -275,4 +298,40 @@ COMPONENT_REGISTRY.set("item", (node: ComponentNode, ctx: RenderContext): Render
   el.className = "wt-item"
   el.textContent = node.text
   return { element: el, errors: [] }
+})
+
+// ---------------------------------------------------------------------------
+// code — monospace code block with optional language label
+// text = code content; fields[0] = language hint (bash, js, ts, etc.)
+// ---------------------------------------------------------------------------
+COMPONENT_REGISTRY.set("code", (node: ComponentNode, _ctx: RenderContext): RenderResult => {
+  const wrapper = document.createElement("div")
+  wrapper.className = "wt-code-block"
+
+  const lang = node.fields[0]
+
+  // Header bar with language label + copy hint
+  if (lang || node.fields.length > 0) {
+    const header = document.createElement("div")
+    header.className = "wt-code-header"
+
+    const langEl = document.createElement("span")
+    langEl.className = "wt-code-lang"
+    langEl.textContent = lang ?? ""
+    header.appendChild(langEl)
+
+    const copyEl = document.createElement("span")
+    copyEl.className = "wt-code-copy"
+    copyEl.textContent = "copy"
+    header.appendChild(copyEl)
+
+    wrapper.appendChild(header)
+  }
+
+  const content = document.createElement("div")
+  content.className = "wt-code-content"
+  content.textContent = node.text || "// code here"
+  wrapper.appendChild(content)
+
+  return { element: wrapper, errors: [] }
 })

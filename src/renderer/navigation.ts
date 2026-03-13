@@ -5,6 +5,31 @@ import type { ComponentNode } from "../types.js"
 import type { RenderContext, RenderResult } from "./registry.js"
 import { createIcon, applyTransition, getBadgeCount, isActive } from "./utils.js"
 
+// Extra CSS for new navigation components (stepper, filter-bar, bottom-nav).
+// Imported by zone-layout.ts to include in WIRETEXT_CSS.
+export const NAV_EXTRA_CSS = `
+.wt-stepper { display: flex; align-items: flex-start; }
+.wt-stepper-step { display: flex; align-items: flex-start; flex: 1; }
+.wt-stepper-step:last-child { flex: 0; }
+.wt-stepper-step-inner { display: flex; flex-direction: column; align-items: center; }
+.wt-stepper-circle { width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; border: 2px solid var(--wiretext-color-border, #E5E7EB); background: var(--wiretext-color-surface, #fff); color: var(--wiretext-color-muted, #6B7280); flex-shrink: 0; }
+.wt-stepper-circle.wt-step-completed { background: var(--wiretext-color-primary, #2563EB); border-color: var(--wiretext-color-primary, #2563EB); color: #fff; }
+.wt-stepper-circle.wt-step-active { background: var(--wiretext-color-primary, #2563EB); border-color: var(--wiretext-color-primary, #2563EB); color: #fff; }
+.wt-stepper-label { font-size: 0.75rem; font-weight: 500; color: var(--wiretext-color-muted, #6B7280); margin-top: 0.375rem; white-space: nowrap; }
+.wt-stepper-label.wt-step-active { color: var(--wiretext-color-primary, #2563EB); font-weight: 600; }
+.wt-stepper-label.wt-step-completed { color: var(--wiretext-color-text, #111827); }
+.wt-stepper-connector { flex: 1; height: 2px; background: var(--wiretext-color-border, #E5E7EB); margin: 1rem 0.25rem 0; }
+.wt-stepper-connector.wt-step-completed { background: var(--wiretext-color-primary, #2563EB); }
+.wt-filter-bar { display: flex; align-items: center; gap: 0.375rem; flex-wrap: wrap; }
+.wt-filter-btn { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.75rem; border: 1px solid var(--wiretext-color-border, #E5E7EB); border-radius: 9999px; background: transparent; cursor: pointer; font-size: 0.875rem; color: var(--wiretext-color-text, #111827); transition: all 0.15s; }
+.wt-filter-btn:hover { background: var(--wiretext-color-hover, rgba(0,0,0,0.05)); }
+.wt-filter-btn.wt-active { background: var(--wiretext-color-primary, #2563EB); border-color: var(--wiretext-color-primary, #2563EB); color: #fff; }
+.wt-bottom-nav { display: flex; align-items: stretch; background: var(--wiretext-color-surface, #fff); border-top: 1px solid var(--wiretext-color-border, #E5E7EB); }
+.wt-bottom-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.25rem; flex: 1; padding: 0.625rem 0.25rem; text-decoration: none; color: var(--wiretext-color-muted, #6B7280); font-size: 0.6875rem; cursor: pointer; position: relative; }
+.wt-bottom-nav-item[aria-current="page"] { color: var(--wiretext-color-primary, #2563EB); }
+.wt-bottom-nav-item-icon { position: relative; font-size: 1.25rem; }
+`
+
 // ---------------------------------------------------------------------------
 // logo — <a class="wt-logo"> with optional icon + text
 // ---------------------------------------------------------------------------
@@ -204,3 +229,162 @@ function buildTreeItem(node: ComponentNode, ctx: RenderContext): HTMLElement {
 
   return item
 }
+
+// ---------------------------------------------------------------------------
+// stepper — horizontal step indicator
+// Items: node.children (parsed in ITEM_MODE from pipes or indented)
+// * = active step; steps before active = completed; steps after = upcoming
+// ---------------------------------------------------------------------------
+COMPONENT_REGISTRY.set("stepper", (node: ComponentNode, _ctx: RenderContext): RenderResult => {
+  const el = document.createElement("div")
+  el.className = "wt-stepper"
+  el.setAttribute("role", "list")
+
+  const items = node.children
+  const activeIdx = items.findIndex(item => isActive(item.modifiers))
+
+  items.forEach((item, i) => {
+    const isCompleted = activeIdx >= 0 && i < activeIdx
+    const isCurrentStep = i === activeIdx
+
+    // Step inner (circle + label)
+    const stepInner = document.createElement("div")
+    stepInner.className = "wt-stepper-step-inner"
+
+    const circle = document.createElement("div")
+    circle.className = "wt-stepper-circle"
+    if (isCompleted) {
+      circle.classList.add("wt-step-completed")
+      // Checkmark for completed steps
+      circle.innerHTML = "✓"
+    } else if (isCurrentStep) {
+      circle.classList.add("wt-step-active")
+      circle.textContent = String(i + 1)
+    } else {
+      circle.textContent = String(i + 1)
+    }
+
+    const label = document.createElement("div")
+    label.className = "wt-stepper-label"
+    label.textContent = item.text
+    if (isCurrentStep) label.classList.add("wt-step-active")
+    else if (isCompleted) label.classList.add("wt-step-completed")
+
+    stepInner.appendChild(circle)
+    stepInner.appendChild(label)
+
+    // Connector between steps (not after last step)
+    const stepWrapper = document.createElement("div")
+    stepWrapper.className = "wt-stepper-step"
+    stepWrapper.setAttribute("role", "listitem")
+    stepWrapper.appendChild(stepInner)
+
+    if (i < items.length - 1) {
+      const connector = document.createElement("div")
+      connector.className = "wt-stepper-connector"
+      if (isCompleted) connector.classList.add("wt-step-completed")
+      stepWrapper.appendChild(connector)
+    }
+
+    el.appendChild(stepWrapper)
+  })
+
+  return { element: el, errors: [] }
+})
+
+// ---------------------------------------------------------------------------
+// filter-bar — horizontal filter pills
+// Items: node.children (ITEM_MODE from pipes)
+// * = active/selected filter; +N = item count badge
+// ---------------------------------------------------------------------------
+COMPONENT_REGISTRY.set("filter-bar", (node: ComponentNode, _ctx: RenderContext): RenderResult => {
+  const el = document.createElement("div")
+  el.className = "wt-filter-bar"
+  el.setAttribute("role", "group")
+
+  for (const item of node.children) {
+    const btn = document.createElement("button")
+    btn.className = "wt-filter-btn"
+    btn.type = "button"
+
+    if (isActive(item.modifiers)) {
+      btn.classList.add("wt-active")
+      btn.setAttribute("aria-pressed", "true")
+    }
+
+    if (item.icon) {
+      btn.appendChild(createIcon(item.icon))
+    }
+
+    btn.appendChild(document.createTextNode(item.text))
+
+    const badgeCount = getBadgeCount(item.modifiers)
+    if (badgeCount !== null) {
+      const badge = document.createElement("wa-badge")
+      badge.setAttribute("variant", isActive(item.modifiers) ? "neutral" : "neutral")
+      badge.style.cssText = "margin-left: 0.125rem;"
+      badge.textContent = String(badgeCount)
+      btn.appendChild(badge)
+    }
+
+    if (item.transition) applyTransition(btn, item.transition)
+
+    el.appendChild(btn)
+  }
+
+  return { element: el, errors: [] }
+})
+
+// ---------------------------------------------------------------------------
+// bottom-nav — fixed bottom tab bar for mobile
+// Items: node.children (ITEM_MODE from pipes)
+// * = active tab; +N = badge count; ~icon = tab icon
+// ---------------------------------------------------------------------------
+COMPONENT_REGISTRY.set("bottom-nav", (node: ComponentNode, _ctx: RenderContext): RenderResult => {
+  const nav = document.createElement("nav")
+  nav.className = "wt-bottom-nav"
+  nav.setAttribute("role", "tablist")
+
+  for (const item of node.children) {
+    const a = document.createElement("a")
+    a.className = "wt-bottom-nav-item"
+    a.href = "#"
+    a.setAttribute("role", "tab")
+
+    if (isActive(item.modifiers)) {
+      a.setAttribute("aria-current", "page")
+      a.setAttribute("aria-selected", "true")
+    }
+
+    if (item.transition) applyTransition(a, item.transition)
+
+    // Icon with optional badge
+    const iconWrap = document.createElement("div")
+    iconWrap.className = "wt-bottom-nav-item-icon"
+
+    if (item.icon) {
+      iconWrap.appendChild(createIcon(item.icon))
+    }
+
+    const badgeCount = getBadgeCount(item.modifiers)
+    if (badgeCount !== null) {
+      const badge = document.createElement("wa-badge")
+      badge.setAttribute("variant", "danger")
+      badge.setAttribute("pill", "")
+      badge.style.cssText = "position: absolute; top: -0.375rem; right: -0.5rem; font-size: 0.625rem;"
+      badge.textContent = String(badgeCount)
+      iconWrap.appendChild(badge)
+    }
+
+    a.appendChild(iconWrap)
+
+    // Label
+    const label = document.createElement("span")
+    label.textContent = item.text
+    a.appendChild(label)
+
+    nav.appendChild(a)
+  }
+
+  return { element: nav, errors: [] }
+})

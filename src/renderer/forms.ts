@@ -5,6 +5,15 @@ import type { ComponentNode } from "../types.js"
 import type { RenderContext, RenderResult } from "./registry.js"
 import { createIcon, isActive, isPrimary } from "./utils.js"
 
+export const FORMS_EXTRA_CSS = `
+.wt-combobox { display: flex; flex-direction: column; gap: 0.25rem; }
+.wt-combobox-label { font-size: 0.875rem; font-weight: 500; color: var(--wiretext-color-text, #111827); }
+.wt-combobox-inner { display: flex; align-items: center; border: 1px solid var(--wiretext-color-border, #E5E7EB); border-radius: var(--wiretext-radius, 6px); background: var(--wiretext-color-surface, #fff); padding: 0.5rem 0.75rem; gap: 0.5rem; cursor: text; }
+.wt-combobox-inner:hover { border-color: var(--wiretext-color-primary, #2563EB); }
+.wt-combobox-placeholder { flex: 1; font-size: 0.875rem; color: var(--wiretext-color-muted, #6B7280); }
+.wt-combobox-chevron { font-size: 0.75rem; color: var(--wiretext-color-muted, #6B7280); }
+`
+
 // ---------------------------------------------------------------------------
 // input — <wa-input> with label, placeholder, type=password when *
 // ---------------------------------------------------------------------------
@@ -177,6 +186,43 @@ COMPONENT_REGISTRY.set("rating", (node: ComponentNode, _ctx: RenderContext): Ren
     rating.setAttribute("value", node.fields[0])
   }
   wrapper.appendChild(rating)
+
+  return { element: wrapper, errors: [] }
+})
+
+// ---------------------------------------------------------------------------
+// combobox — input with dropdown suggestion affordance
+// text = label; fields[0] = placeholder text
+// ---------------------------------------------------------------------------
+COMPONENT_REGISTRY.set("combobox", (node: ComponentNode, _ctx: RenderContext): RenderResult => {
+  const wrapper = document.createElement("div")
+  wrapper.className = "wt-combobox"
+
+  // Label
+  if (node.text) {
+    const label = document.createElement("label")
+    label.className = "wt-combobox-label"
+    label.textContent = node.text
+    wrapper.appendChild(label)
+  }
+
+  const inner = document.createElement("div")
+  inner.className = "wt-combobox-inner"
+  inner.setAttribute("role", "combobox")
+  inner.setAttribute("aria-expanded", "false")
+  inner.setAttribute("aria-haspopup", "listbox")
+
+  const placeholder = document.createElement("span")
+  placeholder.className = "wt-combobox-placeholder"
+  placeholder.textContent = node.fields[0] ?? "Search..."
+  inner.appendChild(placeholder)
+
+  const chevron = document.createElement("span")
+  chevron.className = "wt-combobox-chevron"
+  chevron.textContent = "▾"
+  inner.appendChild(chevron)
+
+  wrapper.appendChild(inner)
 
   return { element: wrapper, errors: [] }
 })

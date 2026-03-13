@@ -25,7 +25,7 @@ export interface ParsedLine {
 }
 
 // Components whose pipes split into items instead of fields.
-const ITEM_MODE_TYPES = new Set(["nav", "tabs", "breadcrumb"])
+const ITEM_MODE_TYPES = new Set(["nav", "tabs", "breadcrumb", "stepper", "filter-bar", "bottom-nav"])
 
 // Components that should NOT carry transitions (produces warn + discard).
 const NON_INTERACTIVE_TYPES = new Set([
@@ -257,8 +257,9 @@ function parseContentTokens(
   modifiers.push(...firstMods)
   rawSegments[firstSegIdx] = firstText
 
-  // Extract from last segment too (if different from first — avoids double extraction)
-  if (lastSegIdx !== firstSegIdx) {
+  // Extract from last segment too (if different from first — avoids double extraction).
+  // Skip for stat: the last field is a delta value (e.g. "+92") not a modifier.
+  if (lastSegIdx !== firstSegIdx && bareType !== "stat") {
     const { text: lastText, modifiers: lastMods } = extractTrailingModifiers(rawSegments[lastSegIdx] ?? "")
     modifiers.push(...lastMods)
     rawSegments[lastSegIdx] = lastText
@@ -586,6 +587,10 @@ function buildTransition(target: string): Transition {
   }
   if (target.startsWith("!")) {
     return { type: "action", target }
+  }
+  // External URL — opens in new tab instead of navigating to a screen
+  if (target.startsWith("http://") || target.startsWith("https://") || target.startsWith("//")) {
+    return { type: "external", target }
   }
   return { type: "screen", target }
 }

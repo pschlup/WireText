@@ -74,11 +74,11 @@ Every wiretext block follows this structure:
 
 Types: `macro`, `theme`, `screen`, `journey`. The `---` separator is always required, even for empty bodies.
 
-## Component Vocabulary (53 components -- closed list)
+## Component Vocabulary (67 components -- closed list)
 
 Use ONLY these components. Anything else is invalid.
 
-### Primitives (13)
+### Primitives (14)
 
 | Component  | Syntax                            | Notes                              |
 |------------|-----------------------------------|------------------------------------|
@@ -95,8 +95,9 @@ Use ONLY these components. Anything else is invalid.
 | `progress` | `progress current \| total`       | step indicator                     |
 | `tag`      | `tag label \| variant`            | like badge but inline              |
 | `item`     | `item text \| context-field`      | ONLY valid inside tree, kanban, or feed |
+| `code`     | `code content \| language`        | monospace code block with optional language label (js, ts, bash, etc.) |
 
-### Form (10)
+### Form (11)
 
 | Component    | Syntax                            | Notes                              |
 |--------------|-----------------------------------|------------------------------------|
@@ -110,8 +111,9 @@ Use ONLY these components. Anything else is invalid.
 | `search`     | `search placeholder`              |                                    |
 | `slider`     | `slider Label \| min, max`        |                                    |
 | `rating`     | `rating Label`                    |                                    |
+| `combobox`   | `combobox Label \| placeholder`   | searchable dropdown                |
 
-### Data (8)
+### Data (10)
 
 | Component    | Syntax                            | Notes                              |
 |--------------|-----------------------------------|------------------------------------|
@@ -123,8 +125,10 @@ Use ONLY these components. Anything else is invalid.
 | `kanban`     | `kanban Title \| col1, col2`      | children are `item` lines          |
 | `calendar`   | `calendar Title \| view`          | views: month, week, day            |
 | `skeleton`   | `skeleton \| count`               | placeholder loading                |
+| `timeline`   | `timeline Title`                  | children are `item` lines; `*` = current step; first field = metadata |
+| `metric`     | `metric Label \| value \| delta \| chart-type` | stat card with sparkline; chart-type: line, area, bar |
 
-### Navigation (6)
+### Navigation (9)
 
 | Component    | Syntax                            | Notes                              |
 |--------------|-----------------------------------|------------------------------------|
@@ -134,21 +138,25 @@ Use ONLY these components. Anything else is invalid.
 | `breadcrumb` | `breadcrumb Home \| Section`      | last item = current (no transition)|
 | `hamburger`  | `hamburger`                       | mobile menu icon                   |
 | `tree`       | `tree Label`                      | children are nested `item` lines   |
+| `stepper`    | `stepper Step 1 \| Step 2* \| Step 3` | `*` = current step; completed steps shown with checkmark |
+| `filter-bar` | `filter-bar All* \| Active \| Archived` | `\|` separates filter options; `*` = selected; `+N` = count badge |
+| `bottom-nav` | `bottom-nav ~house Home* \| ~folder Files \| ~user Profile` | mobile bottom navigation; `~icon` prefix on each item |
 
-### Containers (8)
+### Containers (9)
 
-| Component  | Syntax                            | Notes                              |
-|------------|-----------------------------------|------------------------------------|
-| `card`     | `card Title`                      | children = content                 |
-| `modal`    | `modal Title`                     | for blocking confirmations         |
-| `drawer`   | `drawer Title`                    | for non-blocking panels            |
-| `alert`    | `alert Message \| variant`        | variants: success, warning, danger, neutral |
-| `toast`    | `toast Message \| variant`        |                                    |
-| `tooltip`  | `tooltip Text`                    |                                    |
-| `callout`  | `callout Message \| variant`      |                                    |
-| `details`  | `details Summary`                 | children = expandable content      |
+| Component      | Syntax                            | Notes                              |
+|----------------|-----------------------------------|------------------------------------|
+| `card`         | `card Title`                      | children = content                 |
+| `modal`        | `modal Title`                     | for blocking confirmations         |
+| `drawer`       | `drawer Title`                    | for non-blocking panels            |
+| `alert`        | `alert Message \| variant`        | variants: success, warning, danger, neutral |
+| `toast`        | `toast Message \| variant`        |                                    |
+| `tooltip`      | `tooltip Text`                    |                                    |
+| `callout`      | `callout Message \| variant`      |                                    |
+| `details`      | `details Summary`                 | children = expandable content      |
+| `action-sheet` | `action-sheet Title`              | mobile bottom sheet; children = button list |
 
-### Compound (8)
+### Compound (14)
 
 #### login-form
 ```
@@ -223,6 +231,63 @@ file-upload
   .accept .pdf, .docx, .xlsx
 ```
 
+#### hero
+```
+hero
+  .eyebrow Open Beta
+  .heading Build faster with WireText
+  .subtext Turn ideas into interactive prototypes in minutes.
+  .actions
+    button Get started free+ -> signup
+    button View demo -> demo
+  .visual dashboard-screenshot
+```
+
+#### testimonial
+```
+testimonial
+  .quote Great tool for rapid prototyping. | Alice Chen | Head of Design at Acme
+  .quote Cut our design review cycles in half. | Bob Smith | PM at Globex
+  .quote Our team adopted it instantly. | Carol Jones | CTO at Initech
+```
+
+#### feature-grid
+```
+feature-grid
+  .feature ~lightning-a Fast | Generate mockups in seconds, not hours
+  .feature ~code-block Code-based | Version control your designs like code
+  .feature ~users Collaborative | Share previews with a single link
+```
+
+#### logo-cloud
+```
+logo-cloud
+  .label Trusted by teams at
+  .logo Acme Corp
+  .logo Globex Inc
+  .logo Initech
+  .logo Umbrella Co
+```
+
+#### onboarding-checklist
+```
+onboarding-checklist
+  .item Connect your repo* | Done
+  .item Invite your team | 2 members added
+  .item Create your first prototype
+  .item Share with stakeholders
+```
+
+#### command-palette
+```
+command-palette
+  .result ~house Go to Dashboard -> dashboard
+  .result ~folder Projects -> projects
+  .result ~gear Settings -> settings
+  .result ~plus Create new project -> new-project
+  .footer ↵ to select · Esc to close
+```
+
 ## DSL Syntax Rules
 
 ### Modifiers
@@ -239,9 +304,11 @@ file-upload
 
 ### Transitions
 - `-> screen-id` or `-> #overlay-id` or `-> !close` or `-> !back`
+- `-> https://example.com` — external URL, opens in a new tab (`target="_blank"`)
 - Preferred: use `->` in generated output
 - Attach to: button, link, logo, individual nav/tabs/breadcrumb items, compound `.action` slots
 - NEVER put transitions on containers (card, modal, drawer, details) -- nest a button/link inside instead
+- External URL links (http://, https://, //) automatically render with `rel="noopener noreferrer"` for security
 
 ### Optional Quotes
 - `"text"` for literal text containing special chars (`|`, `->`, `*`, `+`)
@@ -573,11 +640,12 @@ screen: choose-plan
 Before presenting output, silently verify and fix:
 
 - [ ] Every block has a `---` separator between header and body
-- [ ] All component names are from the 53-item closed vocabulary
+- [ ] All component names are from the 67-item closed vocabulary
 - [ ] All IDs match `[a-z0-9-]+`
 - [ ] No `->` transitions on containers (card, modal, drawer, details)
-- [ ] `item` only appears inside tree, kanban, or feed
+- [ ] `item` only appears inside tree, kanban, feed, or timeline
 - [ ] `link | url` and `-> target` are never both on the same link
+- [ ] External URL transitions (`-> https://...`) open in a new tab — do not use for same-app navigation
 - [ ] `modal` for blocking decisions, `drawer` for non-blocking panels
 - [ ] Screen bodies are under 30 lines
 - [ ] No Lorem ipsum -- all placeholder data is realistic

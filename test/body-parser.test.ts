@@ -282,6 +282,28 @@ describe("component parser — parseLine()", () => {
     expect(result.modifiers).toContainEqual({ type: "primary" })
     expect(result.transition).toEqual({ type: "screen", target: "project-create" })
   })
+
+  // External link transitions (epic-012)
+  it("parses https:// transition as external type", () => {
+    const { result } = parse("button Visit GitHub → https://github.com")
+    expect(result.text).toBe("Visit GitHub")
+    expect(result.transition).toEqual({ type: "external", target: "https://github.com" })
+  })
+
+  it("parses http:// transition as external type", () => {
+    const { result } = parse("link Docs → http://docs.example.com")
+    expect(result.transition).toEqual({ type: "external", target: "http://docs.example.com" })
+  })
+
+  it("parses // (protocol-relative) transition as external type", () => {
+    const { result } = parse("button CDN → //cdn.example.com/file.js")
+    expect(result.transition).toEqual({ type: "external", target: "//cdn.example.com/file.js" })
+  })
+
+  it("internal screen transitions still parse as screen type after external URL support", () => {
+    const { result } = parse("button Dashboard → dashboard")
+    expect(result.transition).toEqual({ type: "screen", target: "dashboard" })
+  })
 })
 
 // ---------------------------------------------------------------------------

@@ -5,6 +5,13 @@ import type { ComponentNode, ParseError } from "../types.js"
 import type { RenderContext, RenderResult } from "./registry.js"
 import { renderChildren, resolveVariant, createIcon } from "./utils.js"
 
+export const CONTAINERS_EXTRA_CSS = `
+.wt-action-sheet-wrap { display: flex; align-items: flex-end; background: rgba(0,0,0,0.3); border-radius: var(--wiretext-radius, 6px); overflow: hidden; }
+.wt-action-sheet { background: var(--wiretext-color-surface, #fff); border-radius: 1rem 1rem 0 0; padding: 1.25rem 1rem 1.5rem; width: 100%; display: flex; flex-direction: column; gap: 0.5rem; }
+.wt-action-sheet-handle { width: 2.5rem; height: 4px; background: var(--wiretext-color-border, #E5E7EB); border-radius: 2px; margin: 0 auto 0.75rem; }
+.wt-action-sheet-title { font-weight: 600; font-size: 0.875rem; color: var(--wiretext-color-muted, #6B7280); text-align: center; padding-bottom: 0.75rem; border-bottom: 1px solid var(--wiretext-color-border, #E5E7EB); margin-bottom: 0.25rem; }
+`
+
 // ---------------------------------------------------------------------------
 // card — <wa-card> with header slot for title, children in default slot
 // ---------------------------------------------------------------------------
@@ -169,4 +176,47 @@ COMPONENT_REGISTRY.set("details", (node: ComponentNode, ctx: RenderContext): Ren
   renderChildren(node, el, ctx, errors)
 
   return { element: el, errors }
+})
+
+// ---------------------------------------------------------------------------
+// action-sheet — mobile bottom sheet with button list
+// text = optional title; children = button nodes
+// ---------------------------------------------------------------------------
+COMPONENT_REGISTRY.set("action-sheet", (node: ComponentNode, ctx: RenderContext): RenderResult => {
+  const errors: ParseError[] = []
+
+  const wrap = document.createElement("div")
+  wrap.className = "wt-action-sheet-wrap"
+
+  const sheet = document.createElement("div")
+  sheet.className = "wt-action-sheet"
+
+  // Drag handle
+  const handle = document.createElement("div")
+  handle.className = "wt-action-sheet-handle"
+  sheet.appendChild(handle)
+
+  // Optional title
+  if (node.text) {
+    const title = document.createElement("div")
+    title.className = "wt-action-sheet-title"
+    title.textContent = node.text
+    sheet.appendChild(title)
+  }
+
+  // Render children (buttons, links, etc.)
+  for (const child of node.children) {
+    const childCtx: RenderContext = { ...ctx, parentComponentType: "action-sheet" }
+    const renderer = COMPONENT_REGISTRY.get(child.type)
+    if (renderer) {
+      const result = renderer(child, childCtx)
+      errors.push(...result.errors)
+      // Make buttons full-width
+      result.element.style.cssText = (result.element.style.cssText || "") + "width: 100%;"
+      sheet.appendChild(result.element)
+    }
+  }
+
+  wrap.appendChild(sheet)
+  return { element: wrap, errors }
 })

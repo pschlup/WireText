@@ -67,8 +67,8 @@ export interface SlotNode {
 
 // §Transitions
 export interface Transition {
-  type:   "screen" | "overlay" | "action"
-  target: string                       // screen id, #overlay-id (with #), or !action-name (with !)
+  type:   "screen" | "overlay" | "action" | "external"
+  target: string                       // screen id, #overlay-id (with #), !action-name (with !), or https:// URL
 }
 
 // §Modifiers — at most one active, at most one primary or badge
