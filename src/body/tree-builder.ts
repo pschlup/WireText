@@ -285,24 +285,16 @@ function buildScreenOrMacroTree(
             blockPosition,
           })
         }
-        // Width is recorded in the zone name as a metadata concern for the layout engine.
-        // The body parser stores it as a special "@zone:N" key.
-        // Per spec, the width is communicated to the layout engine; we store it in a
-        // separate metadata entry using the key format "<zone>:width".
-        // For now, we record it as a sibling entry — the layout engine reads it.
-        // We encode it as a fake ComponentNode with type "zone-width" and text = width string.
-        // Actually, looking at the types, ParsedBody.zones is Map<string,ComponentNode[]>.
-        // The cleanest approach: store the width in a "width" entry in the zones map using
-        // key "@sidebar:width" as a convention. But this is outside the scope of the parser.
-        // The parser's job is just to produce the component tree; the layout engine handles widths.
-        // We can encode it as the first component having type "zone-width" — but that pollutes
-        // the component tree. Better: just proceed and let the layout engine infer from zone name + spec defaults.
-        // The acceptance criteria says "Zone width integer parsed" — we validate it above.
-        // For now, we will inject a virtual node with type "_zone-width" and text = the integer string.
-        // The layout engine can recognize and consume this node.
+        // Width override is communicated to the layout engine via the zone map
+        // key: "sidebar:3" instead of plain "sidebar". The layout engine's
+        // resolveZoneWidth() parses the suffix to extract the column count.
       }
 
-      if (body.zones.has(zoneName)) {
+      // Check for duplicate zone — match both "sidebar" and "sidebar:3" keys
+      const zoneExists = [...body.zones.keys()].some(
+        k => k === zoneName || k.startsWith(zoneName + ":"),
+      )
+      if (zoneExists) {
         // Explicit @main + unlabeled content → error already handled above
         // Duplicate explicit zone → error
         if (zoneName === "main" && implicitMainTokens.length > 0) {
@@ -355,28 +347,12 @@ function buildScreenOrMacroTree(
         components = buildComponentList(zoneTokens, 0, null, blockPosition, errors)
       }
 
-      // Store width annotation as first child if specified
-      if (zoneParts.length > 1) {
-        const width = parseInt(zoneParts[1]!, 10)
-        if (!isNaN(width)) {
-          components = [
-            {
-              type:       "_zone-width",
-              text:       String(width),
-              fields:     [],
-              icon:       null,
-              modifiers:  [],
-              transition: null,
-              slots:      new Map(),
-              children:   [],
-              rowColumns: null,
-            },
-            ...components,
-          ]
-        }
-      }
-
-      body.zones.set(zoneName, components)
+      // Use "zone:N" key when an explicit width is specified so the layout
+      // engine's resolveZoneWidth() can parse it from the map key.
+      const zoneKey = (zoneParts.length > 1 && !isNaN(parseInt(zoneParts[1]!, 10)))
+        ? `${zoneName}:${zoneParts[1]}`
+        : zoneName
+      body.zones.set(zoneKey, components)
       continue
     }
 

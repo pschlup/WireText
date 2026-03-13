@@ -597,10 +597,10 @@ text Welcome`
     const { tokens } = tokenize(body, 0)
     const { body: parsedBody, errors } = buildTree(tokens, "screen", 0)
     noErrors(errors)
-    const sidebarZone = parsedBody.zones.get("sidebar")!
-    // Width annotation stored as first child with type "_zone-width"
-    expect(sidebarZone[0]!.type).toBe("_zone-width")
-    expect(sidebarZone[0]!.text).toBe("3")
+    // Width is encoded in the zone map key as "sidebar:3"
+    expect(parsedBody.zones.has("sidebar:3")).toBe(true)
+    const sidebarZone = parsedBody.zones.get("sidebar:3")!
+    expect(sidebarZone[0]!.type).toBe("nav")
   })
 
   // -- Error cases --

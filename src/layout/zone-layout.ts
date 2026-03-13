@@ -332,10 +332,6 @@ function renderZoneChildren(
   parentComponentType: string | null,
 ): void {
   for (const node of nodes) {
-    // Skip virtual _zone-width nodes — they carry width metadata for the layout
-    // engine and are not renderable components.
-    if (node.type === "_zone-width") continue
-
     if (node.type === "row") {
       const result = renderRow(node, parentCols, blockPosition, themeTokens, errors)
       errors.push(...result.errors)

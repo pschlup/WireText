@@ -19,5 +19,18 @@ export function createResolver(blocks: WireTextBlock[]): Resolver {
       }
       return best
     },
+
+    resolveByType(type: BlockType, beforePosition: number): WireTextBlock | null {
+      // Nearest-previous block of this type (any id), for implicit theme resolution
+      let best: WireTextBlock | null = null
+      for (const block of blocks) {
+        if (block.type === type && block.position < beforePosition) {
+          if (best === null || block.position > best.position) {
+            best = block
+          }
+        }
+      }
+      return best
+    },
   }
 }

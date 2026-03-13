@@ -17,6 +17,8 @@ export interface WireTextBlock {
 export interface Resolver {
   // Returns nearest-previous definition for given type + id, before given position
   resolve(type: BlockType, id: string, beforePosition: number): WireTextBlock | null
+  // Returns nearest-previous definition for given type (any id), before given position
+  resolveByType(type: BlockType, beforePosition: number): WireTextBlock | null
 }
 
 export interface WireTextPlugin {

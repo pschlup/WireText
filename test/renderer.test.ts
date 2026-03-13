@@ -144,11 +144,11 @@ describe("primitives", () => {
     expect(element.textContent).toBe("Save")
   })
 
-  it("button + modifier → variant=primary", () => {
+  it("button + modifier → variant=brand", () => {
     const mods: Modifier[] = [{ type: "primary" }]
     const { element } = render(makeNode("button", "Save", { modifiers: mods }))
     expect(element.tagName.toLowerCase()).toBe("wa-button")
-    expect(element.getAttribute("variant")).toBe("primary")
+    expect(element.getAttribute("variant")).toBe("brand")
   })
 
   it("button without + → no variant attribute", () => {

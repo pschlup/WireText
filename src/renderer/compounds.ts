@@ -193,7 +193,7 @@ function renderAuthForm(node: ComponentNode, ctx: RenderContext, config: AuthFor
   }
 
   const submitBtn = document.createElement("wa-button")
-  submitBtn.setAttribute("variant", "primary")
+  submitBtn.setAttribute("variant", "brand")
   submitBtn.style.cssText = "width: 100%; margin-top: 0.25rem;"
   submitBtn.textContent = config.submitLabel
   fieldsContainer.appendChild(submitBtn)
@@ -293,7 +293,7 @@ COMPONENT_REGISTRY.set("pricing-table", (node: ComponentNode, ctx: RenderContext
     // CTA button
     const btn = document.createElement("wa-button")
     btn.style.cssText = "width: 100%; margin-top: 0.75rem;"
-    if (isActive(plan.modifiers)) btn.setAttribute("variant", "primary")
+    if (isActive(plan.modifiers)) btn.setAttribute("variant", "brand")
     btn.textContent = "Get started"
     if (plan.transition) applyTransition(btn, plan.transition)
     card.appendChild(btn)
@@ -349,7 +349,7 @@ COMPONENT_REGISTRY.set("empty-state", (node: ComponentNode, ctx: RenderContext):
   const actionSlot = slot(node, "action")
   if (actionSlot) {
     const btn = document.createElement("wa-button")
-    btn.setAttribute("variant", "primary")
+    btn.setAttribute("variant", "brand")
     btn.textContent = actionSlot.text
     if (actionSlot.transition) applyTransition(btn, actionSlot.transition)
     el.appendChild(btn)
@@ -693,14 +693,14 @@ COMPONENT_REGISTRY.set("settings-form", (node: ComponentNode, ctx: RenderContext
   const actionSlot = slot(node, "action")
   if (actionSlot) {
     const btn = document.createElement("wa-button")
-    btn.setAttribute("variant", "primary")
+    btn.setAttribute("variant", "brand")
     btn.setAttribute("type", "submit")
     btn.textContent = actionSlot.text
     if (actionSlot.transition) applyTransition(btn, actionSlot.transition)
     form.appendChild(btn)
   } else if (node.text) {
     const btn = document.createElement("wa-button")
-    btn.setAttribute("variant", "primary")
+    btn.setAttribute("variant", "brand")
     btn.setAttribute("type", "submit")
     btn.textContent = "Save changes"
     form.appendChild(btn)
@@ -806,7 +806,7 @@ COMPONENT_REGISTRY.set("hero", (node: ComponentNode, ctx: RenderContext): Render
     // If no children, render the slot text as a button
     if (actionsSlot.children.length === 0 && actionsSlot.text) {
       const btn = document.createElement("wa-button")
-      btn.setAttribute("variant", "primary")
+      btn.setAttribute("variant", "brand")
       btn.textContent = actionsSlot.text
       if (actionsSlot.transition) applyTransition(btn, actionsSlot.transition)
       actionsEl.appendChild(btn)

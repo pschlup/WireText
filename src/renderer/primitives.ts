@@ -88,13 +88,13 @@ COMPONENT_REGISTRY.set("link", (node: ComponentNode, _ctx: RenderContext): Rende
 })
 
 // ---------------------------------------------------------------------------
-// button — <wa-button>; variant=primary when +; icon when ~name
+// button — <wa-button>; variant=brand when +; icon when ~name
 // ---------------------------------------------------------------------------
 COMPONENT_REGISTRY.set("button", (node: ComponentNode, ctx: RenderContext): RenderResult => {
   const el = document.createElement("wa-button")
 
   if (isPrimary(node.modifiers)) {
-    el.setAttribute("variant", "primary")
+    el.setAttribute("variant", "brand")
   }
 
   if (node.icon) {

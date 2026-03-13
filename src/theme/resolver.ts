@@ -121,12 +121,15 @@ export function resolveTheme(block: WireTextBlock, resolver: Resolver): ThemeTok
   }
 
   // ── 2. Nearest-previous theme block (any id) ───────────────────────────────
-  // We look for any theme block before this one; since we don't know the id we
-  // must search all blocks.  The Resolver only supports type+id lookups, so we
-  // cannot use it directly here.  Instead the convention is: if no explicit
-  // `theme:` header, return SAAS_LIGHT (nearest-previous resolution requires
-  // a document-level scan which is outside the Resolver interface).
-  // Callers that need nearest-previous can pre-resolve and inject via header.
+  const nearestTheme = resolver.resolveByType("theme", block.position)
+  if (nearestTheme !== null) {
+    try {
+      return resolveCustomBlock(nearestTheme, block.position, resolver, new Set())
+    } catch (err) {
+      console.error(`[wiretext] ${(err as Error).message}`)
+      return SAAS_LIGHT
+    }
+  }
 
   // ── 3. Default fallback ────────────────────────────────────────────────────
   return SAAS_LIGHT

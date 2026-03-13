@@ -12,6 +12,7 @@ const TOKEN_TO_CSS_PROP: Record<string, string> = {
   muted:   "--wiretext-color-muted",
   danger:  "--wiretext-color-danger",
   success: "--wiretext-color-success",
+  warning: "--wiretext-color-warning",
   radius:  "--wiretext-radius",
   font:    "--wiretext-font-family",
   size:    "--wiretext-font-size",
@@ -19,10 +20,17 @@ const TOKEN_TO_CSS_PROP: Record<string, string> = {
 
 // WebAwesome bridge: map --wiretext-* to the corresponding --wa-* properties so
 // WebAwesome components pick up the theme automatically.
+// WebAwesome 3.x uses --wa-color-brand (not --wa-color-primary-500) for accent buttons.
+// We set both the base variable and the -50 shade that WA uses for text-on-color contrast.
 const WA_BRIDGE: ReadonlyArray<readonly [string, string]> = [
-  ["--wa-color-primary-500",     "var(--wiretext-color-primary)"],
-  ["--wa-color-danger-500",      "var(--wiretext-color-danger)"],
-  ["--wa-color-success-500",     "var(--wiretext-color-success)"],
+  ["--wa-color-brand",           "var(--wiretext-color-primary)"],
+  ["--wa-color-brand-50",        "var(--wiretext-color-primary)"],
+  ["--wa-color-danger",          "var(--wiretext-color-danger)"],
+  ["--wa-color-danger-50",       "var(--wiretext-color-danger)"],
+  ["--wa-color-success",         "var(--wiretext-color-success)"],
+  ["--wa-color-success-50",      "var(--wiretext-color-success)"],
+  ["--wa-color-warning",         "var(--wiretext-color-warning, var(--wiretext-color-danger))"],
+  ["--wa-color-warning-50",      "var(--wiretext-color-warning, var(--wiretext-color-danger))"],
   ["--wa-border-radius-medium",  "var(--wiretext-radius)"],
   ["--wa-font-sans",             "var(--wiretext-font-family)"],
 ]
