@@ -90,6 +90,7 @@ export const WIRETEXT_CSS = `
 wa-card, wa-alert, .wt-stat, .wt-feed, .wt-chart-placeholder, .wt-table, .wt-data-table, wa-details { margin-bottom: 1rem; }
 wa-card:last-child, wa-alert:last-child, .wt-stat:last-child, .wt-feed:last-child, .wt-chart-placeholder:last-child, .wt-table:last-child, wa-details:last-child { margin-bottom: 0; }
 .wt-row { align-items: start; }
+wa-progress-bar { --track-color: var(--wiretext-color-border, #E2E8F0); --indicator-color: var(--wiretext-color-primary, #2563EB); }
 .wt-text-center { text-align: center; }
 `
 
