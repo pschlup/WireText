@@ -168,9 +168,9 @@ export function renderLayout(body: ParsedBody, blockPosition: number): LayoutRes
 
   // Grid areas: header/footer always span full width
   const gridAreas: string[] = []
-  if (hasHeader) gridAreas.push(buildGridAreaRow("header", hasSidebar, hasAside))
-  gridAreas.push(buildGridAreaRow("body-row", hasSidebar, hasAside, { hasSidebar, hasMain, hasAside }))
-  if (hasFooter) gridAreas.push(buildGridAreaRow("footer", hasSidebar, hasAside))
+  if (hasHeader) gridAreas.push(buildGridAreaRow("header"))
+  gridAreas.push(buildGridAreaRow("body-row"))
+  if (hasFooter) gridAreas.push(buildGridAreaRow("footer"))
 
   wrapper.style.gridTemplateColumns = colParts.join(" ")
   wrapper.style.gridTemplateRows = "auto 1fr auto"
@@ -269,12 +269,7 @@ function resolveZoneWidth(body: ParsedBody, zoneName: string): number {
 
 // Build a CSS grid-template-areas row string (simplified approach — not strictly needed, using
 // numeric column layout instead via grid-template-columns + manual element ordering)
-function buildGridAreaRow(
-  area: string,
-  _hasSidebar: boolean,
-  _hasAside: boolean,
-  _opts?: { hasSidebar: boolean; hasMain: boolean; hasAside: boolean },
-): string {
+function buildGridAreaRow(area: string): string {
   return area
 }
 

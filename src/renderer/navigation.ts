@@ -256,7 +256,7 @@ COMPONENT_REGISTRY.set("stepper", (node: ComponentNode, _ctx: RenderContext): Re
     if (isCompleted) {
       circle.classList.add("wt-step-completed")
       // Checkmark for completed steps
-      circle.innerHTML = "✓"
+      circle.textContent = "✓"
     } else if (isCurrentStep) {
       circle.classList.add("wt-step-active")
       circle.textContent = String(i + 1)

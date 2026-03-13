@@ -87,3 +87,8 @@ export interface ParseError {
 
 // Theme token map
 export type ThemeTokens = Record<string, string>
+
+// Zone names — centralized constants used by parser, layout, and renderer
+export type ZoneName = "header" | "sidebar" | "main" | "aside" | "footer"
+export const ZONE_NAMES: ReadonlySet<string> = new Set<ZoneName>(["header", "sidebar", "main", "aside", "footer"])
+export const HEADER_FOOTER_ZONES: ReadonlySet<string> = new Set<ZoneName>(["header", "footer"])

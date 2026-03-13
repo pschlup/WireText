@@ -455,6 +455,17 @@ function escapeHtml(text: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+}
+
+/** Escape a string for safe use inside an HTML attribute value. */
+function escapeAttr(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
 }
 
 // ── renderDocument ────────────────────────────────────────────────────────────
@@ -538,7 +549,7 @@ export function renderDocument(blocks: WireTextBlock[]): ArtifactResult {
       isFirst = false
 
       screenDivs.push(
-        `${errorHtml}<div class="wt-screen${activeClass}" data-wt-screen-id="${block.id}"${ariaHidden}>\n${innerHtml}\n</div>`,
+        `${errorHtml}<div class="wt-screen${activeClass}" data-wt-screen-id="${escapeAttr(block.id)}"${ariaHidden}>\n${innerHtml}\n</div>`,
       )
 
       continue
@@ -637,11 +648,11 @@ export function renderDocument(blocks: WireTextBlock[]): ArtifactResult {
 
         // Nav tab button.
         navItems.push(
-          `<button class="wt-journey-tab${activeClass}" data-wt-journey-tab="${screenId}" aria-selected="${activeClass ? "true" : "false"}">${escapeHtml(screenId)}</button>`,
+          `<button class="wt-journey-tab${activeClass}" data-wt-journey-tab="${escapeAttr(screenId)}" aria-selected="${activeClass ? "true" : "false"}">${escapeHtml(screenId)}</button>`,
         )
 
         screenPanels.push(
-          `<div class="wt-screen${activeClass}" data-wt-screen-id="${screenId}"${ariaHidden}>\n${innerHtml}\n</div>`,
+          `<div class="wt-screen${activeClass}" data-wt-screen-id="${escapeAttr(screenId)}"${ariaHidden}>\n${innerHtml}\n</div>`,
         )
       }
 
@@ -657,7 +668,7 @@ export function renderDocument(blocks: WireTextBlock[]): ArtifactResult {
       const contentHtml = screenPanels.join("\n")
 
       screenDivs.push(
-        `${errorHtml}<div class="wt-journey wt-screen${journeyActiveClass}" data-wt-screen-id="${block.id}"${journeyAriaHidden}>\n${navHtml}\n${contentHtml}\n</div>`,
+        `${errorHtml}<div class="wt-journey wt-screen${journeyActiveClass}" data-wt-screen-id="${escapeAttr(block.id)}"${journeyAriaHidden}>\n${navHtml}\n${contentHtml}\n</div>`,
       )
     }
   }

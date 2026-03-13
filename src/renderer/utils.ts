@@ -3,6 +3,34 @@
 import type { ComponentNode, Modifier, ParseError, Transition } from "../types.js"
 import { renderComponent, type RenderContext, type RenderResult } from "./registry.js"
 
+/** DOM element builder — reduces verbose createElement/setAttribute/appendChild chains. */
+export function el(
+  tag: string,
+  attrs?: Record<string, string> | null,
+  ...children: (Node | string)[]
+): HTMLElement {
+  const element = document.createElement(tag)
+  if (attrs) {
+    for (const [key, value] of Object.entries(attrs)) {
+      if (key === "style") {
+        element.style.cssText = value
+      } else if (key === "className") {
+        element.className = value
+      } else {
+        element.setAttribute(key, value)
+      }
+    }
+  }
+  for (const child of children) {
+    if (typeof child === "string") {
+      element.appendChild(document.createTextNode(child))
+    } else {
+      element.appendChild(child)
+    }
+  }
+  return element
+}
+
 /** Create a Phosphor icon custom element: "trash" → <ph-trash> */
 export function createIcon(name: string): HTMLElement {
   return document.createElement(`ph-${name}`)

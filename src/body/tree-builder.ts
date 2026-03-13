@@ -8,6 +8,7 @@ import type {
   BlockType,
   ParseError,
 } from "../types.js"
+import { ZONE_NAMES, HEADER_FOOTER_ZONES } from "../types.js"
 import type { LineToken } from "./tokenizer.js"
 import {
   parseLine,
@@ -16,14 +17,12 @@ import {
   parseRowCells,
 } from "./component-parser.js"
 
-// Zones that accept left/right sub-slot pseudo-children.
-const HEADER_FOOTER_ZONES = new Set(["header", "footer"])
+// (HEADER_FOOTER_ZONES imported from types.ts)
 
 // Components whose .items/.actions slots use CSV item splitting.
 const CSV_SLOT_NAMES = new Set(["items", "actions", "bulk-actions"])
 
-// Valid zone names.
-const ALLOWED_ZONES = new Set(["header", "sidebar", "main", "aside", "footer"])
+// (ZONE_NAMES imported from types.ts — replaces local ZONE_NAMES)
 
 // Item-mode navigation components.
 const NAV_ITEM_TYPES = new Set(["nav", "tabs", "breadcrumb", "stepper", "filter-bar", "bottom-nav"])
@@ -262,7 +261,7 @@ function buildScreenOrMacroTree(
       const zoneParts  = zoneStr.split(/\s+/)
       const zoneName   = zoneParts[0] ?? ""
 
-      if (!ALLOWED_ZONES.has(zoneName)) {
+      if (!ZONE_NAMES.has(zoneName)) {
         errors.push({
           severity:      "error",
           message:       `Unknown zone "@${zoneName}" — allowed: header, sidebar, main, aside, footer`,

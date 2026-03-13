@@ -106,12 +106,27 @@ function slots(node: ComponentNode, name: string): SlotNode[] {
 }
 
 // ---------------------------------------------------------------------------
-// login-form — <wa-card class="wt-login-form">
-// Slots: .logo, .providers, .footer
-// Default: email + password inputs + "Sign in" button
+// Auth form helper — shared by login-form and signup-form
+// Both produce <wa-card class="wt-login-form"> with identical logo, providers,
+// divider, and footer sections; only the fields and submit label differ.
 // ---------------------------------------------------------------------------
-COMPONENT_REGISTRY.set("login-form", (node: ComponentNode, ctx: RenderContext): RenderResult => {
-  const errors = validateSlots(node, "login-form", ctx.blockPosition)
+interface AuthFormField {
+  label: string
+  type?: string
+  placeholder: string
+}
+
+interface AuthFormConfig {
+  componentName: string
+  submitLabel: string
+  // Default fields when no .fields slot is provided
+  defaultFields: AuthFormField[]
+  // Whether to support .fields slot for custom field definitions
+  supportsFieldSlots: boolean
+}
+
+function renderAuthForm(node: ComponentNode, ctx: RenderContext, config: AuthFormConfig): RenderResult {
+  const errors = validateSlots(node, config.componentName, ctx.blockPosition)
 
   const card = document.createElement("wa-card")
   card.className = "wt-login-form"
@@ -128,7 +143,7 @@ COMPONENT_REGISTRY.set("login-form", (node: ComponentNode, ctx: RenderContext): 
   }
   card.appendChild(logoArea)
 
-  // Social providers
+  // Social provider buttons
   const providerSlots = slots(node, "providers")
   if (providerSlots.length > 0) {
     const providersEl = document.createElement("div")
@@ -147,36 +162,43 @@ COMPONENT_REGISTRY.set("login-form", (node: ComponentNode, ctx: RenderContext): 
     }
     card.appendChild(providersEl)
 
-    // "or" divider
+    // "or" divider between providers and email/password fields
     const divider = document.createElement("div")
     divider.className = "wt-login-divider"
     divider.textContent = "or"
     card.appendChild(divider)
   }
 
-  // Default fields: email + password + submit
-  const fields = document.createElement("div")
-  fields.className = "wt-login-fields"
+  // Form fields — from .fields slot (signup-form) or defaults
+  const fieldsContainer = document.createElement("div")
+  fieldsContainer.className = "wt-login-fields"
 
-  const emailInput = document.createElement("wa-input")
-  emailInput.setAttribute("label", "Email")
-  emailInput.setAttribute("type", "email")
-  emailInput.setAttribute("placeholder", "you@company.com")
-  fields.appendChild(emailInput)
-
-  const passwordInput = document.createElement("wa-input")
-  passwordInput.setAttribute("label", "Password")
-  passwordInput.setAttribute("type", "password")
-  passwordInput.setAttribute("placeholder", "••••••••")
-  fields.appendChild(passwordInput)
+  const fieldSlots = config.supportsFieldSlots ? slots(node, "fields") : []
+  if (fieldSlots.length > 0) {
+    for (const f of fieldSlots) {
+      const input = document.createElement("wa-input")
+      input.setAttribute("label", f.text)
+      if (f.fields[0]) input.setAttribute("placeholder", f.fields[0])
+      if (isActive(f.modifiers)) input.setAttribute("type", "password")
+      fieldsContainer.appendChild(input)
+    }
+  } else {
+    for (const field of config.defaultFields) {
+      const input = document.createElement("wa-input")
+      input.setAttribute("label", field.label)
+      if (field.type) input.setAttribute("type", field.type)
+      input.setAttribute("placeholder", field.placeholder)
+      fieldsContainer.appendChild(input)
+    }
+  }
 
   const submitBtn = document.createElement("wa-button")
   submitBtn.setAttribute("variant", "primary")
   submitBtn.style.cssText = "width: 100%; margin-top: 0.25rem;"
-  submitBtn.textContent = "Sign in"
-  fields.appendChild(submitBtn)
+  submitBtn.textContent = config.submitLabel
+  fieldsContainer.appendChild(submitBtn)
 
-  card.appendChild(fields)
+  card.appendChild(fieldsContainer)
 
   // Footer link
   const footerSlot = slot(node, "footer")
@@ -192,109 +214,39 @@ COMPONENT_REGISTRY.set("login-form", (node: ComponentNode, ctx: RenderContext): 
   }
 
   return { element: card, errors }
+}
+
+// ---------------------------------------------------------------------------
+// login-form — <wa-card class="wt-login-form">
+// Slots: .logo, .providers, .footer
+// Default: email + password inputs + "Sign in" button
+// ---------------------------------------------------------------------------
+COMPONENT_REGISTRY.set("login-form", (node: ComponentNode, ctx: RenderContext): RenderResult => {
+  return renderAuthForm(node, ctx, {
+    componentName: "login-form",
+    submitLabel: "Sign in",
+    supportsFieldSlots: false,
+    defaultFields: [
+      { label: "Email", type: "email", placeholder: "you@company.com" },
+      { label: "Password", type: "password", placeholder: "••••••••" },
+    ],
+  })
 })
 
 // ---------------------------------------------------------------------------
 // signup-form — similar to login-form but with .fields slot for custom fields
 // ---------------------------------------------------------------------------
 COMPONENT_REGISTRY.set("signup-form", (node: ComponentNode, ctx: RenderContext): RenderResult => {
-  const errors = validateSlots(node, "signup-form", ctx.blockPosition)
-
-  const card = document.createElement("wa-card")
-  card.className = "wt-login-form"
-
-  // Logo area
-  const logoSlot = slot(node, "logo")
-  const logoArea = document.createElement("div")
-  logoArea.className = "wt-login-logo"
-  if (logoSlot) {
-    if (logoSlot.icon) logoArea.appendChild(createIcon(logoSlot.icon))
-    logoArea.appendChild(document.createTextNode(logoSlot.text))
-  } else if (node.text) {
-    logoArea.textContent = node.text
-  }
-  card.appendChild(logoArea)
-
-  // Provider buttons
-  const providerSlots = slots(node, "providers")
-  if (providerSlots.length > 0) {
-    const providersEl = document.createElement("div")
-    providersEl.className = "wt-login-providers"
-    for (const p of providerSlots) {
-      const btn = document.createElement("wa-button")
-      btn.setAttribute("variant", "outline")
-      btn.style.cssText = "width: 100%;"
-      if (p.icon) {
-        const iconEl = createIcon(p.icon)
-        iconEl.setAttribute("slot", "prefix")
-        btn.appendChild(iconEl)
-      }
-      btn.appendChild(document.createTextNode(p.text))
-      providersEl.appendChild(btn)
-    }
-    card.appendChild(providersEl)
-
-    const divider = document.createElement("div")
-    divider.className = "wt-login-divider"
-    divider.textContent = "or"
-    card.appendChild(divider)
-  }
-
-  // Custom fields from .fields slot, or defaults
-  const fieldsContainer = document.createElement("div")
-  fieldsContainer.className = "wt-login-fields"
-
-  const fieldSlots = slots(node, "fields")
-  if (fieldSlots.length > 0) {
-    for (const f of fieldSlots) {
-      const input = document.createElement("wa-input")
-      input.setAttribute("label", f.text)
-      if (f.fields[0]) input.setAttribute("placeholder", f.fields[0])
-      if (isActive(f.modifiers)) input.setAttribute("type", "password")
-      fieldsContainer.appendChild(input)
-    }
-  } else {
-    // Default signup fields
-    const nameInput = document.createElement("wa-input")
-    nameInput.setAttribute("label", "Full name")
-    nameInput.setAttribute("placeholder", "Jane Smith")
-    fieldsContainer.appendChild(nameInput)
-
-    const emailInput = document.createElement("wa-input")
-    emailInput.setAttribute("label", "Email")
-    emailInput.setAttribute("type", "email")
-    emailInput.setAttribute("placeholder", "jane@company.com")
-    fieldsContainer.appendChild(emailInput)
-
-    const passwordInput = document.createElement("wa-input")
-    passwordInput.setAttribute("label", "Password")
-    passwordInput.setAttribute("type", "password")
-    passwordInput.setAttribute("placeholder", "••••••••")
-    fieldsContainer.appendChild(passwordInput)
-  }
-
-  const submitBtn = document.createElement("wa-button")
-  submitBtn.setAttribute("variant", "primary")
-  submitBtn.style.cssText = "width: 100%; margin-top: 0.25rem;"
-  submitBtn.textContent = "Create account"
-  fieldsContainer.appendChild(submitBtn)
-
-  card.appendChild(fieldsContainer)
-
-  // Footer
-  const footerSlot = slot(node, "footer")
-  if (footerSlot) {
-    const footer = document.createElement("div")
-    footer.className = "wt-login-footer"
-    const link = document.createElement("a")
-    link.href = "#"
-    if (footerSlot.transition) applyTransition(link, footerSlot.transition)
-    link.textContent = footerSlot.text
-    footer.appendChild(link)
-    card.appendChild(footer)
-  }
-
-  return { element: card, errors }
+  return renderAuthForm(node, ctx, {
+    componentName: "signup-form",
+    submitLabel: "Create account",
+    supportsFieldSlots: true,
+    defaultFields: [
+      { label: "Full name", placeholder: "Jane Smith" },
+      { label: "Email", type: "email", placeholder: "jane@company.com" },
+      { label: "Password", type: "password", placeholder: "••••••••" },
+    ],
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -481,62 +433,39 @@ COMPONENT_REGISTRY.set("user-menu", (node: ComponentNode, ctx: RenderContext): R
 })
 
 // ---------------------------------------------------------------------------
-// data-table — <table class="wt-data-table">
-// .select → checkbox column
-// .columns → <thead> with CSV column names
-// .row → <tbody> rows; cells[] provides cell values
-//   - cell with * modifier → <wa-badge variant="success">
-//   - cell with transition → first cell as <a> link
-// .actions → action buttons column per row
-// .bulk-actions → toolbar above table
-// .empty → shown if no .row slots
+// data-table helpers — extracted for readability from the 170+ line renderer
 // ---------------------------------------------------------------------------
-COMPONENT_REGISTRY.set("data-table", (node: ComponentNode, ctx: RenderContext): RenderResult => {
-  const errors = validateSlots(node, "data-table", ctx.blockPosition)
 
-  const wrapper = document.createElement("div")
-  wrapper.className = "wt-data-table-wrapper"
+/** Render the bulk-actions toolbar above the table. */
+function renderBulkToolbar(bulkSlot: SlotNode): HTMLElement {
+  const toolbar = document.createElement("div")
+  toolbar.className = "wt-data-table-toolbar"
 
-  // Bulk actions toolbar
-  const bulkSlot = slot(node, "bulk-actions")
-  if (bulkSlot) {
-    const toolbar = document.createElement("div")
-    toolbar.className = "wt-data-table-toolbar"
-
-    if (bulkSlot.children.length > 0) {
-      for (const action of bulkSlot.children) {
-        const btn = document.createElement("wa-button")
-        btn.setAttribute("size", "small")
-        btn.textContent = action.text
-        if (action.transition) applyTransition(btn, action.transition)
-        toolbar.appendChild(btn)
-      }
-    } else if (bulkSlot.text) {
-      const parts = bulkSlot.text.split(",").map(p => p.trim())
-      for (const p of parts) {
-        const btn = document.createElement("wa-button")
-        btn.setAttribute("size", "small")
-        btn.textContent = p
-        toolbar.appendChild(btn)
-      }
+  if (bulkSlot.children.length > 0) {
+    for (const action of bulkSlot.children) {
+      const btn = document.createElement("wa-button")
+      btn.setAttribute("size", "small")
+      btn.textContent = action.text
+      if (action.transition) applyTransition(btn, action.transition)
+      toolbar.appendChild(btn)
     }
-
-    wrapper.appendChild(toolbar)
+  } else if (bulkSlot.text) {
+    const parts = bulkSlot.text.split(",").map(p => p.trim())
+    for (const p of parts) {
+      const btn = document.createElement("wa-button")
+      btn.setAttribute("size", "small")
+      btn.textContent = p
+      toolbar.appendChild(btn)
+    }
   }
 
-  const table = document.createElement("table")
-  table.className = "wt-data-table"
+  return toolbar
+}
 
-  const hasSelect  = node.slots.has("select")
-  const hasActions = node.slots.has("actions")
-
-  // Parse column names from .columns slot
-  const columnsSlot = slot(node, "columns")
-  const columnNames: string[] = columnsSlot
-    ? columnsSlot.text.split(",").map(c => c.trim()).filter(Boolean)
-    : []
-
-  // Build thead
+/** Render the <thead> row with optional select checkbox and actions column. */
+function renderDataTableHead(
+  columnNames: string[], hasSelect: boolean, hasActions: boolean
+): HTMLElement {
   const thead = document.createElement("thead")
   const headRow = document.createElement("tr")
 
@@ -562,7 +491,74 @@ COMPONENT_REGISTRY.set("data-table", (node: ComponentNode, ctx: RenderContext): 
   }
 
   thead.appendChild(headRow)
-  table.appendChild(thead)
+  return thead
+}
+
+/** Render action buttons (<td>) for a single data-table row. */
+function renderRowActions(actionSlots: SlotNode[]): HTMLElement {
+  const td = document.createElement("td")
+  td.style.cssText = "white-space: nowrap;"
+  const actionsWrapper = document.createElement("div")
+  actionsWrapper.style.cssText = "display: flex; gap: 0.25rem;"
+
+  // Use the first .actions slot for all rows (it defines available actions)
+  const actSlot = actionSlots[0]
+  if (actSlot) {
+    for (const action of actSlot.children) {
+      const btn = document.createElement("wa-button")
+      btn.setAttribute("size", "small")
+      btn.setAttribute("variant", "text")
+      if (action.icon) {
+        const iconEl = createIcon(action.icon)
+        iconEl.setAttribute("slot", "prefix")
+        btn.appendChild(iconEl)
+      }
+      btn.appendChild(document.createTextNode(action.text))
+      if (action.transition) applyTransition(btn, action.transition)
+      actionsWrapper.appendChild(btn)
+    }
+  }
+
+  td.appendChild(actionsWrapper)
+  return td
+}
+
+// ---------------------------------------------------------------------------
+// data-table — <table class="wt-data-table">
+// .select → checkbox column
+// .columns → <thead> with CSV column names
+// .row → <tbody> rows; cells[] provides cell values
+//   - cell with * modifier → <wa-badge variant="success">
+//   - cell with transition → first cell as <a> link
+// .actions → action buttons column per row
+// .bulk-actions → toolbar above table
+// .empty → shown if no .row slots
+// ---------------------------------------------------------------------------
+COMPONENT_REGISTRY.set("data-table", (node: ComponentNode, ctx: RenderContext): RenderResult => {
+  const errors = validateSlots(node, "data-table", ctx.blockPosition)
+
+  const wrapper = document.createElement("div")
+  wrapper.className = "wt-data-table-wrapper"
+
+  // Bulk actions toolbar
+  const bulkSlot = slot(node, "bulk-actions")
+  if (bulkSlot) {
+    wrapper.appendChild(renderBulkToolbar(bulkSlot))
+  }
+
+  const table = document.createElement("table")
+  table.className = "wt-data-table"
+
+  const hasSelect  = node.slots.has("select")
+  const hasActions = node.slots.has("actions")
+
+  // Parse column names from .columns slot
+  const columnsSlot = slot(node, "columns")
+  const columnNames: string[] = columnsSlot
+    ? columnsSlot.text.split(",").map(c => c.trim()).filter(Boolean)
+    : []
+
+  table.appendChild(renderDataTableHead(columnNames, hasSelect, hasActions))
 
   // Build tbody
   const tbody = document.createElement("tbody")
@@ -570,7 +566,7 @@ COMPONENT_REGISTRY.set("data-table", (node: ComponentNode, ctx: RenderContext): 
   const actionSlots = slots(node, "actions")
 
   if (rowSlots.length > 0) {
-    rowSlots.forEach((row, rowIdx) => {
+    for (const row of rowSlots) {
       const tr = document.createElement("tr")
 
       if (hasSelect) {
@@ -615,35 +611,11 @@ COMPONENT_REGISTRY.set("data-table", (node: ComponentNode, ctx: RenderContext): 
 
       // Action buttons for this row
       if (hasActions && actionSlots.length > 0) {
-        const td = document.createElement("td")
-        td.style.cssText = "white-space: nowrap;"
-        const actionsWrapper = document.createElement("div")
-        actionsWrapper.style.cssText = "display: flex; gap: 0.25rem;"
-
-        // Use the first .actions slot for all rows (it defines available actions)
-        const actSlot = actionSlots[0]
-        if (actSlot) {
-          for (const action of actSlot.children) {
-            const btn = document.createElement("wa-button")
-            btn.setAttribute("size", "small")
-            btn.setAttribute("variant", "text")
-            if (action.icon) {
-              const iconEl = createIcon(action.icon)
-              iconEl.setAttribute("slot", "prefix")
-              btn.appendChild(iconEl)
-            }
-            btn.appendChild(document.createTextNode(action.text))
-            if (action.transition) applyTransition(btn, action.transition)
-            actionsWrapper.appendChild(btn)
-          }
-        }
-
-        td.appendChild(actionsWrapper)
-        tr.appendChild(td)
+        tr.appendChild(renderRowActions(actionSlots))
       }
 
       tbody.appendChild(tr)
-    })
+    }
   } else {
     // No rows — show empty state if .empty slot provided, otherwise empty tbody
     const emptySlot = slot(node, "empty")
