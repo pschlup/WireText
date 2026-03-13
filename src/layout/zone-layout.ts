@@ -32,7 +32,8 @@ export const WIRETEXT_CSS = `
 .wt-text { margin: 0 0 0.5rem; color: var(--wiretext-color-text, #111827); }
 .wt-subtext { margin: 0 0 0.5rem; color: var(--wiretext-color-muted, #6B7280); font-size: 0.875rem; }
 .wt-spacer { display: block; }
-.wt-logo { display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; font-weight: 700; font-size: 1.125rem; color: var(--wiretext-color-text, #111827); }
+.wt-logo { display: inline-flex; align-items: center; gap: 0.625rem; text-decoration: none; font-weight: 700; font-size: 1.375rem; color: var(--wiretext-color-text, #111827); letter-spacing: -0.01em; }
+.wt-logo ph-icon, .wt-logo [data-ph-icon] { font-size: 1.75rem; }
 .wt-stat { display: flex; flex-direction: column; gap: 0.25rem; }
 .wt-stat-label { font-size: 0.875rem; color: var(--wiretext-color-muted, #6B7280); }
 .wt-stat-value { font-size: 1.75rem; font-weight: 600; color: var(--wiretext-color-text, #111827); line-height: 1.2; }
@@ -85,6 +86,10 @@ export const WIRETEXT_CSS = `
 .wt-settings-section { display: flex; flex-direction: column; gap: 0.75rem; }
 .wt-settings-section-title { font-weight: 600; font-size: 1rem; color: var(--wiretext-color-text, #111827); margin: 0 0 0.25rem; }
 .wt-user-menu-trigger { cursor: pointer; }
+wa-card, wa-alert, .wt-stat, .wt-feed, .wt-chart-placeholder, .wt-table, .wt-data-table, wa-details { margin-bottom: 1rem; }
+wa-card:last-child, wa-alert:last-child, .wt-stat:last-child, .wt-feed:last-child, .wt-chart-placeholder:last-child, .wt-table:last-child, wa-details:last-child { margin-bottom: 0; }
+.wt-row { align-items: start; }
+.wt-text-center { text-align: center; }
 `
 
 // Zone name → number of columns it occupies by default
