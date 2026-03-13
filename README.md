@@ -88,11 +88,16 @@ Restart Claude Code Desktop. Done.
 For contributors or users who prefer pulling updates via git:
 
 ```bash
+# Already cloned the repo? Run from inside it:
+bash install.sh
+
+# Haven't cloned yet:
 curl -fsSL https://raw.githubusercontent.com/wiretext/wiretext/master/install.sh | bash
 ```
 
-Clones to `~/.local/share/wiretext`, builds, links the CLI, and copies
-the skill. Re-run to update.
+If you already have the repo, the script uses it in place. Otherwise it
+clones to `~/.local/share/wiretext`. Either way: builds, links the CLI,
+copies the skill. Re-run to update.
 
 ---
 

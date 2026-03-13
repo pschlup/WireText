@@ -1,20 +1,19 @@
 #!/usr/bin/env bash
 # install.sh — WireText skill installer for Claude Code Desktop (Option A)
 #
-# Clones the repo, builds it, links the `wiretext` CLI globally, and copies
-# the skill to ~/.claude/skills/wiretext/ so Claude Code discovers /wiretext.
+# Builds the project, links the `wiretext` CLI globally, and copies the skill
+# to ~/.claude/skills/wiretext/ so Claude Code Desktop discovers /wiretext.
 #
 # Usage:
+#   bash install.sh                          # from inside a cloned repo
 #   curl -fsSL https://raw.githubusercontent.com/wiretext/wiretext/master/install.sh | bash
-#   bash install.sh                          # default install to ~/.local/share/wiretext
-#   WIRETEXT_DIR=~/tools/wiretext bash install.sh  # custom location
+#   WIRETEXT_DIR=~/tools/wiretext bash install.sh  # custom clone location
 #
 # To update an existing install, just re-run the script.
 
 set -euo pipefail
 
 REPO="https://github.com/wiretext/wiretext.git"
-DIR="${WIRETEXT_DIR:-$HOME/.local/share/wiretext}"
 SKILL_DEST="$HOME/.claude/skills/wiretext/SKILL.md"
 SKILL_DIR="$(dirname "$SKILL_DEST")"
 
@@ -39,15 +38,37 @@ node_major=$(node --version | sed 's/v\([0-9]*\).*/\1/')
 
 ok "Node.js $(node --version), npm $(npm --version)"
 
-# ── clone or update ──────────────────────────────────────────────────────────
-if [ -d "$DIR/.git" ]; then
-  info "Updating existing install in $DIR..."
-  git -C "$DIR" pull --ff-only --quiet
-  ok "Updated to $(git -C "$DIR" rev-parse --short HEAD)"
+# ── locate source: current dir, existing install, or fresh clone ─────────────
+# Detect if this script is being run from inside the wiretext repo itself,
+# so contributors and users who already cloned don't get a redundant clone.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-install.sh}")" 2>/dev/null && pwd || echo "")"
+is_wiretext_repo() { [ -f "$1/package.json" ] && grep -q '"name": "wiretext"' "$1/package.json" 2>/dev/null; }
+
+if is_wiretext_repo "$SCRIPT_DIR"; then
+  DIR="$SCRIPT_DIR"
+  ok "Using repo at $DIR"
+elif [ -n "${WIRETEXT_DIR:-}" ]; then
+  DIR="$WIRETEXT_DIR"
+  if is_wiretext_repo "$DIR"; then
+    info "Updating existing install in $DIR..."
+    git -C "$DIR" pull --ff-only --quiet
+    ok "Updated to $(git -C "$DIR" rev-parse --short HEAD)"
+  else
+    info "Cloning wiretext to $DIR..."
+    git clone --quiet "$REPO" "$DIR"
+    ok "Cloned $(git -C "$DIR" rev-parse --short HEAD)"
+  fi
 else
-  info "Cloning wiretext to $DIR..."
-  git clone --quiet "$REPO" "$DIR"
-  ok "Cloned $(git -C "$DIR" rev-parse --short HEAD)"
+  DIR="$HOME/.local/share/wiretext"
+  if [ -d "$DIR/.git" ]; then
+    info "Updating existing install in $DIR..."
+    git -C "$DIR" pull --ff-only --quiet
+    ok "Updated to $(git -C "$DIR" rev-parse --short HEAD)"
+  else
+    info "Cloning wiretext to $DIR..."
+    git clone --quiet "$REPO" "$DIR"
+    ok "Cloned $(git -C "$DIR" rev-parse --short HEAD)"
+  fi
 fi
 
 # ── build ────────────────────────────────────────────────────────────────────
