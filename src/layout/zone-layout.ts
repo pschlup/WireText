@@ -40,14 +40,15 @@ export const WIRETEXT_CSS = `
 .wt-spacer { display: block; }
 .wt-logo { display: inline-flex; align-items: center; gap: 0.625rem; text-decoration: none; font-weight: 700; font-size: 1.375rem; color: var(--wiretext-color-text, #111827); letter-spacing: -0.01em; }
 .wt-logo ph-icon, .wt-logo [data-ph-icon] { font-size: 1.75rem; }
-.wt-stat { display: flex; flex-direction: column; gap: 0.25rem; }
+.wt-stat { display: flex; flex-direction: column; gap: 0.25rem; padding: 1rem 1.25rem; border: 1px solid var(--wiretext-color-border, #E5E7EB); border-radius: var(--wiretext-radius, 6px); background: var(--wiretext-color-surface, #fff); }
 .wt-stat-label { font-size: 0.875rem; color: var(--wiretext-color-muted, #6B7280); }
 .wt-stat-value { font-size: 1.75rem; font-weight: 600; color: var(--wiretext-color-text, #111827); line-height: 1.2; }
 .wt-stat-delta { font-size: 0.875rem; font-weight: 500; }
 .wt-stat-delta-positive { color: var(--wiretext-color-success, #16A34A); }
 .wt-stat-delta-negative { color: var(--wiretext-color-danger, #DC2626); }
 .wt-stat-delta-neutral { color: var(--wiretext-color-muted, #6B7280); }
-.wt-chart-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px dashed var(--wiretext-color-border, #E5E7EB); border-radius: var(--wiretext-radius, 6px); background: var(--wiretext-color-surface, #fff); min-height: 160px; color: var(--wiretext-color-muted, #6B7280); gap: 0.5rem; }
+.wt-chart-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--wiretext-color-border, #E5E7EB); border-radius: var(--wiretext-radius, 6px); background: linear-gradient(90deg, var(--wiretext-color-surface, #fff) 25%, var(--wiretext-color-bg, #f9fafb) 50%, var(--wiretext-color-surface, #fff) 75%); background-size: 200% 100%; animation: wt-shimmer 1.5s ease-in-out infinite; min-height: 160px; color: var(--wiretext-color-muted, #6B7280); gap: 0.5rem; }
+@keyframes wt-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 .wt-chart-type-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.6; }
 .wt-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
 .wt-table th { text-align: left; padding: 0.625rem 0.75rem; border-bottom: 2px solid var(--wiretext-color-border, #E5E7EB); font-weight: 600; color: var(--wiretext-color-text, #111827); }
@@ -62,7 +63,9 @@ export const WIRETEXT_CSS = `
 .wt-page-btn[aria-current="true"] { background: var(--wiretext-color-primary, #2563EB); color: #fff; border-color: var(--wiretext-color-primary, #2563EB); }
 .wt-feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
 .wt-feed-item { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem; border-radius: var(--wiretext-radius, 6px); background: var(--wiretext-color-surface, #fff); border: 1px solid var(--wiretext-color-border, #E5E7EB); }
-.wt-feed-item-content { flex: 1; min-width: 0; }
+.wt-feed-item-content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.125rem; }
+.wt-feed-primary { font-size: 0.875rem; font-weight: 600; color: var(--wiretext-color-text, #111827); }
+.wt-feed-secondary { font-size: 0.75rem; color: var(--wiretext-color-muted, #6B7280); }
 .wt-kanban { display: flex; gap: 1rem; overflow-x: auto; }
 .wt-kanban-column { flex: 1; min-width: 200px; background: var(--wiretext-color-bg, #f9fafb); border-radius: var(--wiretext-radius, 6px); padding: 0.75rem; }
 .wt-kanban-column-title { font-weight: 600; font-size: 0.875rem; color: var(--wiretext-color-muted, #6B7280); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
@@ -95,7 +98,11 @@ export const WIRETEXT_CSS = `
 wa-card, wa-alert, .wt-stat, .wt-feed, .wt-chart-placeholder, .wt-table, .wt-data-table, wa-details { margin-bottom: 1rem; }
 wa-card:last-child, wa-alert:last-child, .wt-stat:last-child, .wt-feed:last-child, .wt-chart-placeholder:last-child, .wt-table:last-child, wa-details:last-child { margin-bottom: 0; }
 .wt-row { align-items: start; }
+wa-progress-bar { --track-color: var(--wiretext-color-border, #E2E8F0); --indicator-color: var(--wiretext-color-primary, #2563EB); }
 .wt-text-center { text-align: center; }
+.wt-card-header { display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 1.0625rem; color: var(--wiretext-color-text, #111827); }
+.wt-card-header-icon { color: var(--wiretext-color-primary, #2563EB); font-size: 1.125rem; }
+wa-card [slot="header"] { padding-bottom: 0.5rem; border-bottom: 1px solid var(--wiretext-color-border, #E5E7EB); }
 ` + NAV_EXTRA_CSS + DATA_EXTRA_CSS + PRIMITIVES_EXTRA_CSS + FORMS_EXTRA_CSS + CONTAINERS_EXTRA_CSS + COMPOUNDS_EXTRA_CSS
 
 // Zone name → number of columns it occupies by default

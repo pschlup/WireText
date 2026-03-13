@@ -78,7 +78,7 @@ export function resolveVariant(
   raw: string | undefined,
   blockPosition: number,
 ): { variant: string; error: ParseError | null } {
-  const valid = new Set(["success", "warning", "danger", "neutral"])
+  const valid = new Set(["success", "warning", "danger", "neutral", "primary"])
   const v = (raw ?? "neutral").toLowerCase()
   if (valid.has(v)) return { variant: v, error: null }
 

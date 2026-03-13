@@ -228,20 +228,8 @@ COMPONENT_REGISTRY.set("chart", (node: ComponentNode, ctx: RenderContext): Rende
   el.setAttribute("role", "img")
   el.setAttribute("aria-label", `${chartType} chart: ${node.text}`)
 
-  // Chart icon based on type
-  const iconMap: Record<string, string> = {
-    line: "chart-line",
-    bar: "chart-bar",
-    pie: "chart-pie",
-    donut: "chart-donut",
-    area: "chart-line",
-  }
-  const iconName = iconMap[chartType] ?? "chart-bar"
-
-  const iconEl = document.createElement("span")
-  iconEl.style.cssText = "font-size: 2.5rem; opacity: 0.3;"
-  iconEl.textContent = "📊"
-  el.appendChild(iconEl)
+  // Skeleton class for CSS shimmer animation (no emoji icons)
+  el.classList.add("wt-skeleton-chart")
 
   if (node.text) {
     const label = document.createElement("div")

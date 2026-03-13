@@ -244,6 +244,34 @@ describe("primitives", () => {
     expect(element.textContent).toBe("Featured")
   })
 
+  it("tag with variant=danger sets correct attribute", () => {
+    const { element, errors } = render(makeNode("tag", "High", { fields: ["danger"] }))
+    expect(element.tagName.toLowerCase()).toBe("wa-tag")
+    expect(element.getAttribute("variant")).toBe("danger")
+    expect(errors).toHaveLength(0)
+  })
+
+  it("tag with variant=warning sets correct attribute", () => {
+    const { element, errors } = render(makeNode("tag", "Medium", { fields: ["warning"] }))
+    expect(element.tagName.toLowerCase()).toBe("wa-tag")
+    expect(element.getAttribute("variant")).toBe("warning")
+    expect(errors).toHaveLength(0)
+  })
+
+  it("tag with no variant defaults to neutral", () => {
+    const { element, errors } = render(makeNode("tag", "Label"))
+    expect(element.tagName.toLowerCase()).toBe("wa-tag")
+    expect(element.getAttribute("variant")).toBe("neutral")
+    expect(errors).toHaveLength(0)
+  })
+
+  it("tag with variant=primary sets correct attribute", () => {
+    const { element, errors } = render(makeNode("tag", "Info", { fields: ["primary"] }))
+    expect(element.tagName.toLowerCase()).toBe("wa-tag")
+    expect(element.getAttribute("variant")).toBe("primary")
+    expect(errors).toHaveLength(0)
+  })
+
   it("item in tree parent → <wa-tree-item>", () => {
     const node = makeNode("item", "Home")
     const { element } = renderComponent(node, { ...DEFAULT_CTX, parentComponentType: "tree" })
@@ -262,6 +290,38 @@ describe("primitives", () => {
     const { element } = renderComponent(node, { ...DEFAULT_CTX, parentComponentType: "feed" })
     expect(element.tagName.toLowerCase()).toBe("li")
     expect(element.className).toBe("wt-feed-item")
+  })
+
+  // task-082: feed item enrichment
+  it("feed item with icon renders icon element with aria-hidden", () => {
+    const node = makeNode("item", "Sarah replied", { icon: "envelope" })
+    const { element } = renderComponent(node, { ...DEFAULT_CTX, parentComponentType: "feed" })
+    const icon = element.querySelector("[aria-hidden]")
+    expect(icon).not.toBeNull()
+    expect(icon!.getAttribute("aria-hidden")).toBe("true")
+  })
+
+  it("feed item renders primary text in <strong>", () => {
+    const node = makeNode("item", "Alice joined")
+    const { element } = renderComponent(node, { ...DEFAULT_CTX, parentComponentType: "feed" })
+    const strong = element.querySelector("strong.wt-feed-primary")
+    expect(strong).not.toBeNull()
+    expect(strong!.textContent).toBe("Alice joined")
+  })
+
+  it("feed item with fields[0] renders secondary text with muted styling", () => {
+    const node = makeNode("item", "Sarah replied", { fields: ["2 hours ago"] })
+    const { element } = renderComponent(node, { ...DEFAULT_CTX, parentComponentType: "feed" })
+    const secondary = element.querySelector("span.wt-feed-secondary")
+    expect(secondary).not.toBeNull()
+    expect(secondary!.textContent).toBe("2 hours ago")
+  })
+
+  it("feed item without fields[0] has no secondary text", () => {
+    const node = makeNode("item", "Alice joined")
+    const { element } = renderComponent(node, { ...DEFAULT_CTX, parentComponentType: "feed" })
+    const secondary = element.querySelector(".wt-feed-secondary")
+    expect(secondary).toBeNull()
   })
 })
 
@@ -530,6 +590,14 @@ describe("data", () => {
     expect(delta).toBeNull()
   })
 
+  it("stat element has wt-stat class with container styling", () => {
+    const { element } = render(makeNode("stat", "MRR", { fields: ["$4,200"] }))
+    expect(element.className).toBe("wt-stat")
+    // Container styling is applied via CSS class; verify the element has the class
+    // that maps to border, padding, background, border-radius in WIRETEXT_CSS
+    expect(element.tagName.toLowerCase()).toBe("div")
+  })
+
   it("chart with valid type → placeholder with data-chart-type", () => {
     const { element, errors } = render(makeNode("chart", "Revenue", { fields: ["bar"] }))
     expect(element.getAttribute("data-chart-type")).toBe("bar")
@@ -545,6 +613,17 @@ describe("data", () => {
   it("chart with no fields → defaults to line", () => {
     const { element } = render(makeNode("chart", "Revenue"))
     expect(element.getAttribute("data-chart-type")).toBe("line")
+  })
+
+  it("chart placeholder element has skeleton CSS class", () => {
+    const { element } = render(makeNode("chart", "Revenue", { fields: ["bar"] }))
+    expect(element.classList.contains("wt-chart-placeholder")).toBe(true)
+    expect(element.classList.contains("wt-skeleton-chart")).toBe(true)
+    // Should not contain emoji text
+    const spans = element.querySelectorAll("span")
+    for (const span of spans) {
+      expect(span.textContent).not.toContain("\uD83D\uDCCA")
+    }
   })
 
   it("calendar defaults to month view", () => {

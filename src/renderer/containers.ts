@@ -23,10 +23,10 @@ COMPONENT_REGISTRY.set("card", (node: ComponentNode, ctx: RenderContext): Render
   if (node.text || node.icon) {
     const header = document.createElement("span")
     header.setAttribute("slot", "header")
-    header.style.cssText = "font-weight: 600; font-size: 1rem; display: inline-flex; align-items: center; gap: 0.5rem;"
+    header.className = "wt-card-header"
     if (node.icon) {
       const iconEl = createIcon(node.icon)
-      iconEl.style.cssText = "color: var(--wiretext-color-primary, #2563EB); font-size: 1.125rem;"
+      iconEl.className = "wt-card-header-icon"
       header.appendChild(iconEl)
     }
     if (node.text) {

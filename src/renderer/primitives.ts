@@ -282,13 +282,25 @@ COMPONENT_REGISTRY.set("item", (node: ComponentNode, ctx: RenderContext): Render
   if (parent === "feed") {
     const li = document.createElement("li")
     li.className = "wt-feed-item"
-    // Icon or avatar for feed items
+    // Icon or avatar for feed items (decorative — hidden from assistive tech)
     if (node.icon) {
-      li.appendChild(createIcon(node.icon))
+      const iconEl = createIcon(node.icon)
+      iconEl.setAttribute("aria-hidden", "true")
+      li.appendChild(iconEl)
     }
     const content = document.createElement("div")
     content.className = "wt-feed-item-content"
-    content.textContent = node.text
+    // Primary text rendered bold; secondary metadata (fields[0]) rendered muted below
+    const primary = document.createElement("strong")
+    primary.className = "wt-feed-primary"
+    primary.textContent = node.text
+    content.appendChild(primary)
+    if (node.fields[0]) {
+      const secondary = document.createElement("span")
+      secondary.className = "wt-feed-secondary"
+      secondary.textContent = node.fields[0]
+      content.appendChild(secondary)
+    }
     li.appendChild(content)
     return { element: li, errors: [] }
   }

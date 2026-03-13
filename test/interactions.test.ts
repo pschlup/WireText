@@ -142,6 +142,18 @@ describe("INTERACTION_JS", () => {
     // openOverlay must dismiss currentOverlay first — never stack.
     expect(INTERACTION_JS).toMatch(/function openOverlay[\s\S]*?closeCurrentOverlay/)
   })
+
+  // task-081: sidebar nav active state tracking
+  it("updates aria-current on .wt-nav-item elements during navigation", () => {
+    // navigateToScreen must call updateSidebarNav to move aria-current="page".
+    expect(INTERACTION_JS).toContain("updateSidebarNav")
+    expect(INTERACTION_JS).toContain("aria-current")
+  })
+
+  it("references wt-nav-item class for active state updates", () => {
+    // The sidebar nav update logic queries .wt-nav-item elements.
+    expect(INTERACTION_JS).toContain("wt-nav-item")
+  })
 })
 
 // ── renderDocument ─────────────────────────────────────────────────────────────

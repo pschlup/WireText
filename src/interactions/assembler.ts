@@ -89,8 +89,38 @@ export const INTERACTION_JS: string = /* javascript */ `
     // Journey nav: update active tab state if this screen is inside a journey.
     updateJourneyNav(target);
 
+    // Sidebar nav: move aria-current="page" to the nav item whose transition
+    // target matches the new screen, so the sidebar highlights the current page.
+    updateSidebarNav(targetId);
+
     // Re-evaluate !back button disabled state after every navigation.
     updateBackButtons();
+  }
+
+  // ── Sidebar nav active state ──────────────────────────────────────────────
+
+  /**
+   * Update sidebar navigation so that exactly one .wt-nav-item has
+   * aria-current="page" — the one whose data-wt-transition target matches
+   * the given screen ID.
+   */
+  function updateSidebarNav(screenId) {
+    // Clear existing active state from all nav items.
+    document.querySelectorAll('.wt-nav-item[aria-current]').forEach(function (el) {
+      el.removeAttribute('aria-current');
+    });
+
+    // Find the nav item whose transition targets the new screen.
+    document.querySelectorAll('.wt-nav-item').forEach(function (el) {
+      var raw = el.getAttribute('data-wt-transition');
+      if (!raw) return;
+      try {
+        var data = JSON.parse(raw);
+        if (data.type === 'screen' && data.target === screenId) {
+          el.setAttribute('aria-current', 'page');
+        }
+      } catch (_) { /* ignore malformed */ }
+    });
   }
 
   function navigateBack() {
