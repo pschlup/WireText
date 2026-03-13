@@ -1,9 +1,9 @@
 // Container component renderers (task-045) — 8 container components
 // card, modal, drawer, alert, toast, tooltip, callout, details
-import { COMPONENT_REGISTRY, renderComponent } from "./registry.js"
+import { COMPONENT_REGISTRY } from "./registry.js"
 import type { ComponentNode, ParseError } from "../types.js"
 import type { RenderContext, RenderResult } from "./registry.js"
-import { renderChildren, resolveVariant, createIcon } from "./utils.js"
+import { renderChildren, resolveVariant, createIcon, el } from "./utils.js"
 
 export const CONTAINERS_EXTRA_CSS = `
 .wt-action-sheet-wrap { display: flex; align-items: flex-end; background: rgba(0,0,0,0.3); border-radius: var(--wiretext-radius, 6px); overflow: hidden; }
@@ -185,24 +185,10 @@ COMPONENT_REGISTRY.set("details", (node: ComponentNode, ctx: RenderContext): Ren
 COMPONENT_REGISTRY.set("action-sheet", (node: ComponentNode, ctx: RenderContext): RenderResult => {
   const errors: ParseError[] = []
 
-  const wrap = document.createElement("div")
-  wrap.className = "wt-action-sheet-wrap"
-
-  const sheet = document.createElement("div")
-  sheet.className = "wt-action-sheet"
-
-  // Drag handle
-  const handle = document.createElement("div")
-  handle.className = "wt-action-sheet-handle"
-  sheet.appendChild(handle)
-
-  // Optional title
-  if (node.text) {
-    const title = document.createElement("div")
-    title.className = "wt-action-sheet-title"
-    title.textContent = node.text
-    sheet.appendChild(title)
-  }
+  const wrap = el("div", { className: "wt-action-sheet-wrap" })
+  const sheet = el("div", { className: "wt-action-sheet" },
+    el("div", { className: "wt-action-sheet-handle" }),
+    ...(node.text ? [el("div", { className: "wt-action-sheet-title" }, node.text)] : []))
 
   // Render children (buttons, links, etc.)
   for (const child of node.children) {

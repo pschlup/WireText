@@ -1,9 +1,9 @@
 // Data component renderers (task-043) — 8 data components
 // table, pagination, stat, chart, feed, kanban, calendar, skeleton
-import { COMPONENT_REGISTRY, renderComponent } from "./registry.js"
+import { COMPONENT_REGISTRY } from "./registry.js"
 import type { ComponentNode, ParseError } from "../types.js"
 import type { RenderContext, RenderResult } from "./registry.js"
-import { renderChildren, isActive } from "./utils.js"
+import { renderChildren, isActive, el } from "./utils.js"
 
 export const DATA_EXTRA_CSS = `
 .wt-timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
@@ -165,40 +165,23 @@ COMPONENT_REGISTRY.set("pagination", (node: ComponentNode, _ctx: RenderContext):
 // Delta: + prefix → green, - prefix → red, no sign → neutral
 // ---------------------------------------------------------------------------
 COMPONENT_REGISTRY.set("stat", (node: ComponentNode, _ctx: RenderContext): RenderResult => {
-  const el = document.createElement("div")
-  el.className = "wt-stat"
-
-  const labelEl = document.createElement("div")
-  labelEl.className = "wt-stat-label"
-  labelEl.textContent = node.text
-  el.appendChild(labelEl)
+  const wrapper = el("div", { className: "wt-stat" },
+    el("div", { className: "wt-stat-label" }, node.text))
 
   if (node.fields[0]) {
-    const valueEl = document.createElement("div")
-    valueEl.className = "wt-stat-value"
-    valueEl.textContent = node.fields[0]
-    el.appendChild(valueEl)
+    wrapper.appendChild(el("div", { className: "wt-stat-value" }, node.fields[0]))
   }
 
   // Delta (only render if fields[1] is present)
   if (node.fields[1] !== undefined) {
     const delta = node.fields[1]
-    const deltaEl = document.createElement("div")
-    deltaEl.className = "wt-stat-delta"
-
-    if (delta.startsWith("+")) {
-      deltaEl.classList.add("wt-stat-delta-positive")
-    } else if (delta.startsWith("-")) {
-      deltaEl.classList.add("wt-stat-delta-negative")
-    } else {
-      deltaEl.classList.add("wt-stat-delta-neutral")
-    }
-
-    deltaEl.textContent = delta
-    el.appendChild(deltaEl)
+    const deltaClass = delta.startsWith("+") ? "wt-stat-delta-positive"
+      : delta.startsWith("-") ? "wt-stat-delta-negative"
+      : "wt-stat-delta-neutral"
+    wrapper.appendChild(el("div", { className: `wt-stat-delta ${deltaClass}` }, delta))
   }
 
-  return { element: el, errors: [] }
+  return { element: wrapper, errors: [] }
 })
 
 // ---------------------------------------------------------------------------
@@ -264,35 +247,13 @@ COMPONENT_REGISTRY.set("feed", (node: ComponentNode, ctx: RenderContext): Render
       { name: "Carol Chen",    text: "Updated the team settings",         time: "Yesterday"    },
     ]
     for (const p of placeholders) {
-      const li = document.createElement("li")
-      li.className = "wt-feed-item"
-
-      const avatar = document.createElement("wa-avatar")
       const initials = p.name.split(" ").map(w => w[0]).join("").toUpperCase()
-      avatar.setAttribute("initials", initials)
-      avatar.setAttribute("label", p.name)
-      li.appendChild(avatar)
-
-      const content = document.createElement("div")
-      content.className = "wt-feed-item-content"
-
-      const strong = document.createElement("strong")
-      strong.style.cssText = "font-size: 0.875rem; display: block;"
-      strong.textContent = p.name
-      content.appendChild(strong)
-
-      const msg = document.createElement("span")
-      msg.style.cssText = "font-size: 0.875rem; color: var(--wiretext-color-text, #111827);"
-      msg.textContent = p.text
-      content.appendChild(msg)
-
-      const time = document.createElement("time")
-      time.style.cssText = "font-size: 0.75rem; color: var(--wiretext-color-muted, #6B7280); display: block; margin-top: 0.125rem;"
-      time.textContent = p.time
-      content.appendChild(time)
-
-      li.appendChild(content)
-      ul.appendChild(li)
+      const avatar = el("wa-avatar", { initials, label: p.name })
+      const content = el("div", { className: "wt-feed-item-content" },
+        el("strong", { style: "font-size: 0.875rem; display: block;" }, p.name),
+        el("span", { style: "font-size: 0.875rem; color: var(--wiretext-color-text, #111827);" }, p.text),
+        el("time", { style: "font-size: 0.75rem; color: var(--wiretext-color-muted, #6B7280); display: block; margin-top: 0.125rem;" }, p.time))
+      ul.appendChild(el("li", { className: "wt-feed-item" }, avatar, content))
     }
   }
 
@@ -564,43 +525,14 @@ COMPONENT_REGISTRY.set("timeline", (node: ComponentNode, _ctx: RenderContext): R
 })
 
 function buildTimelineItem(text: string, meta: string, icon: string | null, isCurrent: boolean): HTMLElement {
-  const li = document.createElement("li")
-  li.className = "wt-timeline-item"
-
-  const spine = document.createElement("div")
-  spine.className = "wt-timeline-spine"
-
-  const dot = document.createElement("div")
-  dot.className = "wt-timeline-dot"
-  if (isCurrent) dot.classList.add("wt-current")
-  if (icon) {
-    const iconEl = document.createElement(`ph-${icon}`)
-    dot.appendChild(iconEl)
-  }
-  spine.appendChild(dot)
-
-  const line = document.createElement("div")
-  line.className = "wt-timeline-line"
-  spine.appendChild(line)
-
-  const content = document.createElement("div")
-  content.className = "wt-timeline-content"
-
-  const title = document.createElement("div")
-  title.className = "wt-timeline-title"
-  title.textContent = text
-  content.appendChild(title)
-
-  if (meta) {
-    const metaEl = document.createElement("div")
-    metaEl.className = "wt-timeline-meta"
-    metaEl.textContent = meta
-    content.appendChild(metaEl)
-  }
-
-  li.appendChild(spine)
-  li.appendChild(content)
-  return li
+  const dot = el("div", { className: `wt-timeline-dot${isCurrent ? " wt-current" : ""}` },
+    ...(icon ? [document.createElement(`ph-${icon}`)] : []))
+  const spine = el("div", { className: "wt-timeline-spine" },
+    dot, el("div", { className: "wt-timeline-line" }))
+  const content = el("div", { className: "wt-timeline-content" },
+    el("div", { className: "wt-timeline-title" }, text),
+    ...(meta ? [el("div", { className: "wt-timeline-meta" }, meta)] : []))
+  return el("li", { className: "wt-timeline-item" }, spine, content)
 }
 
 // ---------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 import { COMPONENT_REGISTRY } from "./registry.js"
 import type { ComponentNode } from "../types.js"
 import type { RenderContext, RenderResult } from "./registry.js"
-import { createIcon, applyTransition, getBadgeCount, isActive } from "./utils.js"
+import { createIcon, applyTransition, getBadgeCount, isActive, el } from "./utils.js"
 
 // Extra CSS for new navigation components (stepper, filter-bar, bottom-nav).
 // Imported by zone-layout.ts to include in WIRETEXT_CSS.
@@ -236,9 +236,7 @@ function buildTreeItem(node: ComponentNode, ctx: RenderContext): HTMLElement {
 // * = active step; steps before active = completed; steps after = upcoming
 // ---------------------------------------------------------------------------
 COMPONENT_REGISTRY.set("stepper", (node: ComponentNode, _ctx: RenderContext): RenderResult => {
-  const el = document.createElement("div")
-  el.className = "wt-stepper"
-  el.setAttribute("role", "list")
+  const wrapper = el("div", { className: "wt-stepper", role: "list" })
 
   const items = node.children
   const activeIdx = items.findIndex(item => isActive(item.modifiers))
@@ -248,48 +246,25 @@ COMPONENT_REGISTRY.set("stepper", (node: ComponentNode, _ctx: RenderContext): Re
     const isCurrentStep = i === activeIdx
 
     // Step inner (circle + label)
-    const stepInner = document.createElement("div")
-    stepInner.className = "wt-stepper-step-inner"
+    const circleClass = `wt-stepper-circle${isCompleted ? " wt-step-completed" : isCurrentStep ? " wt-step-active" : ""}`
+    const circleText = isCompleted ? "✓" : String(i + 1)
+    const labelClass = `wt-stepper-label${isCurrentStep ? " wt-step-active" : isCompleted ? " wt-step-completed" : ""}`
 
-    const circle = document.createElement("div")
-    circle.className = "wt-stepper-circle"
-    if (isCompleted) {
-      circle.classList.add("wt-step-completed")
-      // Checkmark for completed steps
-      circle.textContent = "✓"
-    } else if (isCurrentStep) {
-      circle.classList.add("wt-step-active")
-      circle.textContent = String(i + 1)
-    } else {
-      circle.textContent = String(i + 1)
-    }
-
-    const label = document.createElement("div")
-    label.className = "wt-stepper-label"
-    label.textContent = item.text
-    if (isCurrentStep) label.classList.add("wt-step-active")
-    else if (isCompleted) label.classList.add("wt-step-completed")
-
-    stepInner.appendChild(circle)
-    stepInner.appendChild(label)
+    const stepInner = el("div", { className: "wt-stepper-step-inner" },
+      el("div", { className: circleClass }, circleText),
+      el("div", { className: labelClass }, item.text))
 
     // Connector between steps (not after last step)
-    const stepWrapper = document.createElement("div")
-    stepWrapper.className = "wt-stepper-step"
-    stepWrapper.setAttribute("role", "listitem")
-    stepWrapper.appendChild(stepInner)
-
+    const stepWrapper = el("div", { className: "wt-stepper-step", role: "listitem" }, stepInner)
     if (i < items.length - 1) {
-      const connector = document.createElement("div")
-      connector.className = "wt-stepper-connector"
-      if (isCompleted) connector.classList.add("wt-step-completed")
-      stepWrapper.appendChild(connector)
+      const connClass = `wt-stepper-connector${isCompleted ? " wt-step-completed" : ""}`
+      stepWrapper.appendChild(el("div", { className: connClass }))
     }
 
-    el.appendChild(stepWrapper)
+    wrapper.appendChild(stepWrapper)
   })
 
-  return { element: el, errors: [] }
+  return { element: wrapper, errors: [] }
 })
 
 // ---------------------------------------------------------------------------
@@ -341,15 +316,10 @@ COMPONENT_REGISTRY.set("filter-bar", (node: ComponentNode, _ctx: RenderContext):
 // * = active tab; +N = badge count; ~icon = tab icon
 // ---------------------------------------------------------------------------
 COMPONENT_REGISTRY.set("bottom-nav", (node: ComponentNode, _ctx: RenderContext): RenderResult => {
-  const nav = document.createElement("nav")
-  nav.className = "wt-bottom-nav"
-  nav.setAttribute("role", "tablist")
+  const navEl = el("nav", { className: "wt-bottom-nav", role: "tablist" })
 
   for (const item of node.children) {
-    const a = document.createElement("a")
-    a.className = "wt-bottom-nav-item"
-    a.href = "#"
-    a.setAttribute("role", "tab")
+    const a = el("a", { className: "wt-bottom-nav-item", href: "#", role: "tab" })
 
     if (isActive(item.modifiers)) {
       a.setAttribute("aria-current", "page")
@@ -359,32 +329,22 @@ COMPONENT_REGISTRY.set("bottom-nav", (node: ComponentNode, _ctx: RenderContext):
     if (item.transition) applyTransition(a, item.transition)
 
     // Icon with optional badge
-    const iconWrap = document.createElement("div")
-    iconWrap.className = "wt-bottom-nav-item-icon"
-
-    if (item.icon) {
-      iconWrap.appendChild(createIcon(item.icon))
-    }
+    const iconWrap = el("div", { className: "wt-bottom-nav-item-icon" },
+      ...(item.icon ? [createIcon(item.icon)] : []))
 
     const badgeCount = getBadgeCount(item.modifiers)
     if (badgeCount !== null) {
-      const badge = document.createElement("wa-badge")
-      badge.setAttribute("variant", "danger")
-      badge.setAttribute("pill", "")
-      badge.style.cssText = "position: absolute; top: -0.375rem; right: -0.5rem; font-size: 0.625rem;"
-      badge.textContent = String(badgeCount)
-      iconWrap.appendChild(badge)
+      iconWrap.appendChild(el("wa-badge", {
+        variant: "danger", pill: "",
+        style: "position: absolute; top: -0.375rem; right: -0.5rem; font-size: 0.625rem;"
+      }, String(badgeCount)))
     }
 
     a.appendChild(iconWrap)
+    a.appendChild(el("span", null, item.text))
 
-    // Label
-    const label = document.createElement("span")
-    label.textContent = item.text
-    a.appendChild(label)
-
-    nav.appendChild(a)
+    navEl.appendChild(a)
   }
 
-  return { element: nav, errors: [] }
+  return { element: navEl, errors: [] }
 })

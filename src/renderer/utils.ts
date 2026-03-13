@@ -36,19 +36,6 @@ export function createIcon(name: string): HTMLElement {
   return document.createElement(`ph-${name}`)
 }
 
-/** Apply component modifiers to an element. Badge count is returned, not applied here
- *  since different components handle badge display differently. */
-export function applyModifiers(el: HTMLElement, modifiers: Modifier[]): void {
-  for (const mod of modifiers) {
-    if (mod.type === "active") {
-      el.setAttribute("aria-current", "page")
-    }
-    if (mod.type === "primary") {
-      el.setAttribute("variant", "primary")
-    }
-    // badge counts are handled per-component
-  }
-}
 
 /** Attach a transition as a data attribute for the interaction system (epic-008).
  *  External URLs (https://, http://, //) are rendered directly as href + target="_blank"

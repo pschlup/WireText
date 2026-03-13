@@ -2,9 +2,9 @@
 // login-form, signup-form, pricing-table, empty-state, user-menu,
 // data-table, settings-form, file-upload
 import { COMPONENT_REGISTRY } from "./registry.js"
-import type { ComponentNode, ParseError, SlotNode } from "../types.js"
+import type { ComponentNode, ParseError, SlotNode, Transition } from "../types.js"
 import type { RenderContext, RenderResult } from "./registry.js"
-import { createIcon, applyTransition, isActive, isPrimary } from "./utils.js"
+import { createIcon, applyTransition, isActive } from "./utils.js"
 
 // Extra CSS for new compound components.
 // Imported by zone-layout.ts for inclusion in WIRETEXT_CSS.
@@ -648,7 +648,7 @@ COMPONENT_REGISTRY.set("settings-form", (node: ComponentNode, ctx: RenderContext
   const form = document.createElement("form")
   form.className = "wt-settings-form"
   // Prevent default form submission in mockup context
-  form.setAttribute("onsubmit", "return false")
+  form.addEventListener("submit", (e) => e.preventDefault())
 
   const sectionSlots = slots(node, "section")
   for (const section of sectionSlots) {
@@ -1152,7 +1152,7 @@ function buildCommandResult(
   icon: string | null,
   title: string,
   desc: string,
-  transition: import("../types.js").Transition | null,
+  transition: Transition | null,
 ): HTMLElement {
   const result = document.createElement("div")
   result.className = "wt-command-result"

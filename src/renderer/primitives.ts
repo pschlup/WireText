@@ -10,6 +10,7 @@ import {
   isActive,
   isPrimary,
   resolveVariant,
+  el,
 } from "./utils.js"
 
 export const PRIMITIVES_EXTRA_CSS = `
@@ -24,10 +25,7 @@ export const PRIMITIVES_EXTRA_CSS = `
 // text — <p class="wt-text">
 // ---------------------------------------------------------------------------
 COMPONENT_REGISTRY.set("text", (node: ComponentNode, _ctx: RenderContext): RenderResult => {
-  const el = document.createElement("p")
-  el.className = "wt-text"
-  el.textContent = node.text
-  return { element: el, errors: [] }
+  return { element: el("p", { className: "wt-text" }, node.text), errors: [] }
 })
 
 // ---------------------------------------------------------------------------
@@ -56,10 +54,7 @@ COMPONENT_REGISTRY.set("heading", (node: ComponentNode, _ctx: RenderContext): Re
 // subtext — <p class="wt-subtext"> (smaller, muted)
 // ---------------------------------------------------------------------------
 COMPONENT_REGISTRY.set("subtext", (node: ComponentNode, _ctx: RenderContext): RenderResult => {
-  const el = document.createElement("p")
-  el.className = "wt-subtext"
-  el.textContent = node.text
-  return { element: el, errors: [] }
+  return { element: el("p", { className: "wt-subtext" }, node.text), errors: [] }
 })
 
 // ---------------------------------------------------------------------------
@@ -192,8 +187,7 @@ COMPONENT_REGISTRY.set("icon", (node: ComponentNode, _ctx: RenderContext): Rende
 // divider — <wa-divider>
 // ---------------------------------------------------------------------------
 COMPONENT_REGISTRY.set("divider", (_node: ComponentNode, _ctx: RenderContext): RenderResult => {
-  const el = document.createElement("wa-divider")
-  return { element: el, errors: [] }
+  return { element: el("wa-divider", null), errors: [] }
 })
 
 // ---------------------------------------------------------------------------
@@ -317,33 +311,17 @@ COMPONENT_REGISTRY.set("item", (node: ComponentNode, ctx: RenderContext): Render
 // text = code content; fields[0] = language hint (bash, js, ts, etc.)
 // ---------------------------------------------------------------------------
 COMPONENT_REGISTRY.set("code", (node: ComponentNode, _ctx: RenderContext): RenderResult => {
-  const wrapper = document.createElement("div")
-  wrapper.className = "wt-code-block"
-
   const lang = node.fields[0]
+  const wrapper = el("div", { className: "wt-code-block" })
 
   // Header bar with language label + copy hint
   if (lang || node.fields.length > 0) {
-    const header = document.createElement("div")
-    header.className = "wt-code-header"
-
-    const langEl = document.createElement("span")
-    langEl.className = "wt-code-lang"
-    langEl.textContent = lang ?? ""
-    header.appendChild(langEl)
-
-    const copyEl = document.createElement("span")
-    copyEl.className = "wt-code-copy"
-    copyEl.textContent = "copy"
-    header.appendChild(copyEl)
-
-    wrapper.appendChild(header)
+    wrapper.appendChild(el("div", { className: "wt-code-header" },
+      el("span", { className: "wt-code-lang" }, lang ?? ""),
+      el("span", { className: "wt-code-copy" }, "copy")))
   }
 
-  const content = document.createElement("div")
-  content.className = "wt-code-content"
-  content.textContent = node.text || "// code here"
-  wrapper.appendChild(content)
+  wrapper.appendChild(el("div", { className: "wt-code-content" }, node.text || "// code here"))
 
   return { element: wrapper, errors: [] }
 })
