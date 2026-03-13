@@ -98,6 +98,9 @@ wa-card, wa-alert, .wt-stat, .wt-feed, .wt-chart-placeholder, .wt-table, .wt-dat
 wa-card:last-child, wa-alert:last-child, .wt-stat:last-child, .wt-feed:last-child, .wt-chart-placeholder:last-child, .wt-table:last-child, wa-details:last-child { margin-bottom: 0; }
 .wt-row { align-items: start; }
 .wt-text-center { text-align: center; }
+.wt-card-header { display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 1.0625rem; color: var(--wiretext-color-text, #111827); }
+.wt-card-header-icon { color: var(--wiretext-color-primary, #2563EB); font-size: 1.125rem; }
+wa-card [slot="header"] { padding-bottom: 0.5rem; border-bottom: 1px solid var(--wiretext-color-border, #E5E7EB); }
 ` + NAV_EXTRA_CSS + DATA_EXTRA_CSS + PRIMITIVES_EXTRA_CSS + FORMS_EXTRA_CSS + CONTAINERS_EXTRA_CSS + COMPOUNDS_EXTRA_CSS
 
 // Zone name → number of columns it occupies by default
