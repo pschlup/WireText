@@ -25,7 +25,10 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src test",
     "render": "npx tsx render.ts",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "release:patch": "npm version patch && git push --follow-tags",
+    "release:minor": "npm version minor && git push --follow-tags",
+    "release:major": "npm version major && git push --follow-tags"
   },
   "dependencies": {
     "happy-dom": "^20.8.4"
