@@ -64,8 +64,9 @@ interfaces.
 
 ## Install
 
-Two paths depending on your workflow. Both install the `wiretext` CLI
-and the `/wiretext` slash command for Claude Code Desktop.
+Two paths depending on your workflow. Both copy a self-contained renderer
+and the `/wiretext` slash command to `~/.claude/skills/wiretext/` — no
+global CLI required.
 
 ### npm (recommended)
 
@@ -77,11 +78,6 @@ wiretext --install-skill
 ```
 
 Restart Claude Code Desktop. Done.
-
-> **nvm users:** the `wiretext` binary needs to be in a PATH location
-> that GUI apps can see. The simplest fix is to install via
-> [Homebrew Node](https://formulae.brew.sh/formula/node) or add your
-> nvm bin dir to `/etc/paths`.
 
 ### Git clone
 
@@ -96,8 +92,8 @@ curl -fsSL https://raw.githubusercontent.com/wiretext/wiretext/master/install.sh
 ```
 
 If you already have the repo, the script uses it in place. Otherwise it
-clones to `~/.local/share/wiretext`. Either way: builds, links the CLI,
-copies the skill. Re-run to update.
+clones to `~/.local/share/wiretext`. Either way: builds and copies the
+skill files. Re-run to update.
 
 ---
 

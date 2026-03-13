@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # install.sh — WireText skill installer for Claude Code Desktop (Option A)
 #
-# Builds the project, links the `wiretext` CLI globally, and copies the skill
-# to ~/.claude/skills/wiretext/ so Claude Code Desktop discovers /wiretext.
+# Builds the project and copies the skill files to ~/.claude/skills/wiretext/
+# so Claude Code Desktop discovers /wiretext. The skill is self-contained —
+# it bundles its own renderer (render.cjs) and does not require a global CLI.
 #
 # Usage:
 #   bash install.sh                          # from inside a cloned repo
@@ -72,35 +73,39 @@ else
 fi
 
 # ── build ────────────────────────────────────────────────────────────────────
+# `npm run build` compiles TypeScript to dist/ AND bundles render.cjs via esbuild.
 info "Installing dependencies and building..."
 cd "$DIR"
 npm install --silent
 npm run build --silent
-ok "Build complete (dist/ ready)"
-
-# ── link CLI ─────────────────────────────────────────────────────────────────
-# npm link makes `wiretext` available as a global command.
-# Falls back with instructions if the global prefix requires root.
-info "Linking wiretext CLI to PATH..."
-if npm link --silent 2>/dev/null; then
-  ok "wiretext CLI available at $(command -v wiretext)"
-else
-  warn "Could not link wiretext globally (npm link failed — likely a permissions issue)."
-  echo ""
-  echo "     Fix with one of these options:"
-  echo "       a) sudo npm link"
-  echo "       b) Change npm prefix:  npm config set prefix ~/.npm-global"
-  echo "          Then add to shell:  export PATH=\"\$HOME/.npm-global/bin:\$PATH\""
-  echo ""
-  echo "     Then re-run this installer."
-  echo ""
-fi
+ok "Build complete"
 
 # ── install skill ────────────────────────────────────────────────────────────
+# Copies SKILL.md and the self-contained render.cjs bundle to the skill directory.
+# The skill calls `node ~/.claude/skills/wiretext/render.cjs` — no global CLI needed.
 info "Installing Claude Code skill to $SKILL_DIR..."
 mkdir -p "$SKILL_DIR"
-cp "$DIR/skill/SKILL.md" "$SKILL_DEST"
+cp "$DIR/skill/SKILL.md"         "$SKILL_DEST"
+cp "$DIR/skill/tools/render.cjs" "$SKILL_DIR/render.cjs"
 ok "Skill installed"
+
+# ── optional: link CLI ────────────────────────────────────────────────────────
+# The `wiretext` CLI is optional — the skill works without it.
+# Link it if you want to render wiretext files from the terminal directly.
+if [ "${WIRETEXT_LINK_CLI:-0}" = "1" ]; then
+  info "Linking wiretext CLI to PATH..."
+  if npm link --silent 2>/dev/null; then
+    ok "wiretext CLI available at $(command -v wiretext)"
+  else
+    warn "Could not link wiretext globally (npm link failed — likely a permissions issue)."
+    echo ""
+    echo "     Fix with one of these options:"
+    echo "       a) sudo npm link"
+    echo "       b) Change npm prefix:  npm config set prefix ~/.npm-global"
+    echo "          Then add to shell:  export PATH=\"\$HOME/.npm-global/bin:\$PATH\""
+    echo ""
+  fi
+fi
 
 # ── done ─────────────────────────────────────────────────────────────────────
 echo ""

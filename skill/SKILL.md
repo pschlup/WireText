@@ -27,12 +27,12 @@ Use the Write tool to save all the wiretext blocks into a single temporary `.md`
 /tmp/wiretext-preview.md
 ```
 
-### Step 3: Render to HTML via the WireText CLI
+### Step 3: Render to HTML
 
-Use the Bash tool to invoke the `wiretext` renderer:
+Use the Bash tool to invoke the bundled WireText renderer:
 
 ```bash
-wiretext /tmp/wiretext-preview.md /tmp/wiretext-preview.html
+node ~/.claude/skills/wiretext/render.cjs /tmp/wiretext-preview.md /tmp/wiretext-preview.html
 ```
 
 If there are parse or render errors, inspect them, fix the DSL, and re-render.

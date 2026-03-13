@@ -45,14 +45,17 @@ if (arg1 === "--help" || arg1 === "-h") {
 }
 
 // ── --install-skill ─────────────────────────────────────────────────────────
-// Copies skill/SKILL.md from the npm package to ~/.claude/skills/wiretext/
-// so Claude Code Desktop can discover it as the /wiretext slash command.
+// Copies skill/SKILL.md and skill/tools/render.cjs from the npm package to
+// ~/.claude/skills/wiretext/ so Claude Code Desktop can discover /wiretext.
+// The bundled render.cjs is a self-contained renderer — no global CLI needed.
 if (arg1 === "--install-skill") {
-  // dist/cli.js is at <package>/dist/cli.js → ../skill/SKILL.md resolves to <package>/skill/SKILL.md
-  const skillSrc  = new URL("../skill/SKILL.md", import.meta.url)
-  const home      = process.env["HOME"] ?? process.env["USERPROFILE"] ?? "~"
-  const skillDir  = join(home, ".claude", "skills", "wiretext")
-  const skillDest = join(skillDir, "SKILL.md")
+  // dist/cli.js is at <package>/dist/cli.js → ../skill/ resolves to <package>/skill/
+  const skillSrc      = new URL("../skill/SKILL.md",         import.meta.url)
+  const rendererSrc   = new URL("../skill/tools/render.cjs", import.meta.url)
+  const home          = process.env["HOME"] ?? process.env["USERPROFILE"] ?? "~"
+  const skillDir      = join(home, ".claude", "skills", "wiretext")
+  const skillDest     = join(skillDir, "SKILL.md")
+  const rendererDest  = join(skillDir, "render.cjs")
 
   if (!existsSync(fileURLToPath(skillSrc))) {
     console.error("Skill file not found at", fileURLToPath(skillSrc))
@@ -60,9 +63,16 @@ if (arg1 === "--install-skill") {
     process.exit(1)
   }
 
+  if (!existsSync(fileURLToPath(rendererSrc))) {
+    console.error("Bundled renderer not found at", fileURLToPath(rendererSrc))
+    console.error("Try reinstalling wiretext: npm install -g wiretext")
+    process.exit(1)
+  }
+
   mkdirSync(skillDir, { recursive: true })
-  copyFileSync(fileURLToPath(skillSrc), skillDest)
-  console.log("✅ Skill installed to", skillDest)
+  copyFileSync(fileURLToPath(skillSrc),    skillDest)
+  copyFileSync(fileURLToPath(rendererSrc), rendererDest)
+  console.log("✅ Skill installed to", skillDir)
   console.log("   Restart Claude Code Desktop and try: /wiretext a SaaS dashboard")
   process.exit(0)
 }
