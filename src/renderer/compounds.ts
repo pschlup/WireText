@@ -558,11 +558,17 @@ COMPONENT_REGISTRY.set("data-table", (node: ComponentNode, ctx: RenderContext): 
   const hasSelect  = node.slots.has("select")
   const hasActions = node.slots.has("actions")
 
-  // Parse column names from .columns slot
+  // Column names: from .columns slot, or from pipe-separated node text/fields
+  // `data-table Name | Company | Email` → text="Name", fields=["Company","Email"]
   const columnsSlot = slot(node, "columns")
-  const columnNames: string[] = columnsSlot
-    ? columnsSlot.text.split(",").map(c => c.trim()).filter(Boolean)
-    : []
+  let columnNames: string[]
+  if (columnsSlot) {
+    columnNames = columnsSlot.text.split(",").map(c => c.trim()).filter(Boolean)
+  } else if (node.text) {
+    columnNames = [node.text, ...node.fields]
+  } else {
+    columnNames = []
+  }
 
   table.appendChild(renderDataTableHead(columnNames, hasSelect, hasActions))
 
@@ -572,6 +578,7 @@ COMPONENT_REGISTRY.set("data-table", (node: ComponentNode, ctx: RenderContext): 
   const actionSlots = slots(node, "actions")
 
   if (rowSlots.length > 0) {
+    // Explicit .row slots — use cell-mode parsing
     for (const row of rowSlots) {
       const tr = document.createElement("tr")
 
@@ -582,7 +589,6 @@ COMPONENT_REGISTRY.set("data-table", (node: ComponentNode, ctx: RenderContext): 
         tr.appendChild(td)
       }
 
-      // row.cells contains parsed cell ComponentNodes
       const cells = row.cells ?? []
 
       cells.forEach((cell, colIdx) => {
@@ -590,13 +596,11 @@ COMPONENT_REGISTRY.set("data-table", (node: ComponentNode, ctx: RenderContext): 
         const hasActiveModifier = cell.modifiers.some(m => m.type === "active")
 
         if (hasActiveModifier) {
-          // Highlighted cell — render as a badge
           const badge = document.createElement("wa-badge")
           badge.setAttribute("variant", "success")
           badge.textContent = cell.text
           td.appendChild(badge)
         } else if (cell.transition && colIdx === 0) {
-          // First cell with transition → render as a link
           const link = document.createElement("a")
           link.href = "#"
           link.style.cssText = "color: var(--wiretext-color-primary, #2563EB); text-decoration: none; font-weight: 500;"
@@ -610,20 +614,43 @@ COMPONENT_REGISTRY.set("data-table", (node: ComponentNode, ctx: RenderContext): 
         tr.appendChild(td)
       })
 
-      // Pad missing cells
       for (let i = cells.length; i < columnNames.length; i++) {
         tr.appendChild(document.createElement("td"))
       }
 
-      // Action buttons for this row
       if (hasActions && actionSlots.length > 0) {
         tr.appendChild(renderRowActions(actionSlots))
       }
 
       tbody.appendChild(tr)
     }
+  } else if (node.children.length > 0) {
+    // Implicit rows: bare indented lines parsed as children
+    // Each child's [text, ...fields] maps to table cells
+    for (const child of node.children) {
+      const tr = document.createElement("tr")
+
+      if (hasSelect) {
+        const td = document.createElement("td")
+        const check = document.createElement("wa-checkbox")
+        td.appendChild(check)
+        tr.appendChild(td)
+      }
+
+      // Parser splits "Sarah Mitchell | ..." into type="Sarah" text="Mitchell",
+      // so reconstruct the first cell by combining type and text for non-component children.
+      const firstCell = child.type === "item" ? child.text : `${child.type} ${child.text}`.trim()
+      const cellValues = [firstCell, ...child.fields]
+      for (let i = 0; i < columnNames.length; i++) {
+        const td = document.createElement("td")
+        td.textContent = cellValues[i] ?? ""
+        tr.appendChild(td)
+      }
+
+      tbody.appendChild(tr)
+    }
   } else {
-    // No rows — show empty state if .empty slot provided, otherwise empty tbody
+    // No rows — show empty state if .empty slot provided, otherwise mock data
     const emptySlot = slot(node, "empty")
     if (emptySlot) {
       const tr = document.createElement("tr")

@@ -24,7 +24,7 @@ export const WIRETEXT_CSS = `
 .wt-footer-inner { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background: var(--wiretext-color-surface); border-top: 1px solid var(--wiretext-color-border); }
 .wt-footer-left, .wt-footer-right { display: flex; align-items: center; gap: 0.5rem; }
 .wt-sidebar { padding: 1rem; background: var(--wiretext-color-surface); border-right: 1px solid var(--wiretext-color-border); overflow-y: auto; }
-.wt-main { padding: 1.5rem; background: var(--wiretext-color-bg, #f9fafb); overflow-y: auto; }
+.wt-main { padding: 1.5rem; padding-bottom: 3rem; background: var(--wiretext-color-bg, #f9fafb); overflow-y: auto; }
 .wt-aside { padding: 1rem; background: var(--wiretext-color-surface); border-left: 1px solid var(--wiretext-color-border); overflow-y: auto; }
 .wt-row { display: grid; gap: 1rem; }
 .wt-cell { min-width: 0; }

@@ -51,21 +51,21 @@ function mockValue(header: string, rowIndex: number): string {
 }
 
 // ---------------------------------------------------------------------------
-// table — <table class="wt-table"> with thead from CSV columns, 3 mock rows
+// table — <table class="wt-table"> with thead from pipe-separated columns
+// Uses child rows when provided; falls back to mock data
 // ---------------------------------------------------------------------------
 COMPONENT_REGISTRY.set("table", (node: ComponentNode, _ctx: RenderContext): RenderResult => {
   const table = document.createElement("table")
   table.className = "wt-table"
 
-  const headers = (node.fields[0] ?? "")
-    .split(",")
-    .map(h => h.trim())
-    .filter(Boolean)
-
+  // Headers come from the pipe-separated fields: `table Col1 | Col2 | Col3`
+  // The parser splits on `|` giving text="Col1", fields=["Col2", "Col3"]
+  let headers: string[] = []
+  if (node.text) {
+    headers = [node.text, ...node.fields]
+  }
   if (headers.length === 0) {
-    // Fallback: use text as a single column
-    if (node.text) headers.push(node.text)
-    else headers.push("Name", "Value", "Status")
+    headers = ["Name", "Value", "Status"]
   }
 
   // Header row
@@ -79,19 +79,37 @@ COMPONENT_REGISTRY.set("table", (node: ComponentNode, _ctx: RenderContext): Rend
   thead.appendChild(headerRow)
   table.appendChild(thead)
 
-  // 3 mock data rows
   const tbody = document.createElement("tbody")
-  for (let i = 0; i < 3; i++) {
-    const tr = document.createElement("tr")
-    for (const h of headers) {
-      const td = document.createElement("td")
-      td.textContent = mockValue(h, i)
-      tr.appendChild(td)
-    }
-    tbody.appendChild(tr)
-  }
-  table.appendChild(tbody)
 
+  if (node.children.length > 0) {
+    // Use child rows as data. The parser splits "Olivia Chen | ..." into
+    // type="Olivia" text="Chen" fields=["..."], so we reconstruct the first
+    // cell by combining type and text when the type isn't a known component.
+    for (const child of node.children) {
+      const tr = document.createElement("tr")
+      const firstCell = child.type === "item" ? child.text : `${child.type} ${child.text}`.trim()
+      const cells = [firstCell, ...child.fields]
+      for (let i = 0; i < headers.length; i++) {
+        const td = document.createElement("td")
+        td.textContent = cells[i] ?? ""
+        tr.appendChild(td)
+      }
+      tbody.appendChild(tr)
+    }
+  } else {
+    // No children — generate 3 mock data rows
+    for (let i = 0; i < 3; i++) {
+      const tr = document.createElement("tr")
+      for (const h of headers) {
+        const td = document.createElement("td")
+        td.textContent = mockValue(h, i)
+        tr.appendChild(td)
+      }
+      tbody.appendChild(tr)
+    }
+  }
+
+  table.appendChild(tbody)
   return { element: table, errors: [] }
 })
 
