@@ -94,3 +94,95 @@ export type ThemeTokens = Record<string, string>
 export type ZoneName = "header" | "sidebar" | "main" | "aside" | "footer"
 export const ZONE_NAMES: ReadonlySet<string> = new Set<ZoneName>(["header", "sidebar", "main", "aside", "footer"])
 export const HEADER_FOOTER_ZONES: ReadonlySet<string> = new Set<ZoneName>(["header", "footer"])
+
+// §Component Hierarchy — four-level classification from page layout down to atomic elements
+export type ComponentLevel = "page" | "section" | "component" | "element"
+
+export const COMPONENT_LEVELS: Readonly<Record<string, ComponentLevel>> = {
+  // Page level — full page sections and top-level layout compositions
+  "hero":                  "page",
+  "login-form":            "page",
+  "signup-form":           "page",
+  "pricing-table":         "page",
+  "empty-state":           "page",
+  "feature-grid":          "page",
+  "logo-cloud":            "page",
+  "onboarding-checklist":  "page",
+  "command-palette":       "page",
+
+  // Section level — mid-level containers, cards, and compound panels
+  "card":                  "section",
+  "modal":                 "section",
+  "drawer":                "section",
+  "details":               "section",
+  "action-sheet":          "section",
+  "data-table":            "section",
+  "settings-form":         "section",
+  "file-upload":           "section",
+  "testimonial":           "section",
+  "user-menu":             "section",
+
+  // Component level — functional components: data display, navigation, feedback
+  "table":                 "component",
+  "nav":                   "component",
+  "tabs":                  "component",
+  "breadcrumb":            "component",
+  "stepper":               "component",
+  "filter-bar":            "component",
+  "bottom-nav":            "component",
+  "tree":                  "component",
+  "pagination":            "component",
+  "stat":                  "component",
+  "chart":                 "component",
+  "feed":                  "component",
+  "kanban":                "component",
+  "calendar":              "component",
+  "timeline":              "component",
+  "metric":                "component",
+  "skeleton":              "component",
+  "alert":                 "component",
+  "toast":                 "component",
+  "callout":               "component",
+  "tooltip":               "component",
+  "logo":                  "component",
+
+  // Element level — atomic UI elements: buttons, form fields, text, icons
+  "text":                  "element",
+  "heading":               "element",
+  "subtext":               "element",
+  "link":                  "element",
+  "button":                "element",
+  "badge":                 "element",
+  "avatar":                "element",
+  "icon":                  "element",
+  "divider":               "element",
+  "spacer":                "element",
+  "progress":              "element",
+  "tag":                   "element",
+  "code":                  "element",
+  "item":                  "element",
+  "hamburger":             "element",
+  "input":                 "element",
+  "select":                "element",
+  "checkbox":              "element",
+  "radio":                 "element",
+  "toggle":                "element",
+  "textarea":              "element",
+  "datepicker":            "element",
+  "search":                "element",
+  "slider":                "element",
+  "rating":                "element",
+  "combobox":              "element",
+}
+
+/** Look up the hierarchy level for a component type; returns undefined for unknown types. */
+export function getComponentLevel(type: string): ComponentLevel | undefined {
+  return COMPONENT_LEVELS[type]
+}
+
+/** Get all component type names at a given hierarchy level. */
+export function getComponentsByLevel(level: ComponentLevel): string[] {
+  return Object.entries(COMPONENT_LEVELS)
+    .filter(([, l]) => l === level)
+    .map(([name]) => name)
+}
