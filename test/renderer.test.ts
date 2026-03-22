@@ -526,10 +526,24 @@ describe("containers", () => {
     expect(element.hasAttribute("open")).toBe(false)
   })
 
-  it("drawer → <wa-drawer> hidden by default", () => {
+  it("drawer → <wa-drawer> hidden by default, placement=end (right)", () => {
     const { element } = render(makeNode("drawer", "Filters"))
     expect(element.tagName.toLowerCase()).toBe("wa-drawer")
     expect(element.hasAttribute("open")).toBe(false)
+    expect(element.getAttribute("placement")).toBe("end")
+    expect(element.getAttribute("data-wt-drawer-side")).toBe("right")
+  })
+
+  it("drawer with fields[0]='left' → placement=start", () => {
+    const { element } = render(makeNode("drawer", "Navigation", { fields: ["left"] }))
+    expect(element.getAttribute("placement")).toBe("start")
+    expect(element.getAttribute("data-wt-drawer-side")).toBe("left")
+  })
+
+  it("drawer with fields[0]='right' → placement=end", () => {
+    const { element } = render(makeNode("drawer", "Details", { fields: ["right"] }))
+    expect(element.getAttribute("placement")).toBe("end")
+    expect(element.getAttribute("data-wt-drawer-side")).toBe("right")
   })
 
   it("alert with variant → <wa-alert variant=danger>", () => {

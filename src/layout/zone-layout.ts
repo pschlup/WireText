@@ -233,6 +233,55 @@ export function renderLayout(body: ParsedBody, blockPosition: number): LayoutRes
     wrapper.appendChild(footerEl)
   }
 
+  // ── Render overlay blocks (#id → modal/drawer/alert) ───────────────────
+  // Overlays are appended outside the grid layout so they float above content.
+  // Each gets a data-wt-overlay-id attribute for the interaction runtime.
+  let hasLeftDrawerOverlay: string | null = null
+
+  for (const [overlayId, overlayNodes] of body.overlays) {
+    for (const node of overlayNodes) {
+      const ctx: RenderContext = {
+        parentColumnWidth: 12,
+        parentComponentType: null,
+        themeTokens,
+        blockPosition,
+      }
+      const result = renderComponent(node, ctx)
+      errors.push(...result.errors)
+      result.element.setAttribute("data-wt-overlay-id", overlayId)
+      wrapper.appendChild(result.element)
+
+      // Track left drawer overlays for auto-hamburger injection
+      if (node.type === "drawer") {
+        const side = (node.fields[0] ?? "").toLowerCase().trim()
+        if (side === "left" || side === "start") {
+          hasLeftDrawerOverlay = overlayId
+        }
+      }
+    }
+  }
+
+  // ── Auto-inject hamburger trigger for left drawer overlays ─────────────
+  // Left drawers (navigation drawers) automatically get a hamburger button.
+  // If a header exists, prepend it to the header-left area.
+  // If no header exists, add a floating hamburger button.
+  if (hasLeftDrawerOverlay !== null) {
+    const hamburgerBtn = document.createElement("wa-icon-button")
+    hamburgerBtn.setAttribute("name", "list")
+    hamburgerBtn.setAttribute("label", "Menu")
+    hamburgerBtn.setAttribute("data-wt-drawer-toggle", hasLeftDrawerOverlay)
+
+    const headerEl = wrapper.querySelector(".wt-header-left")
+    if (headerEl) {
+      // Prepend hamburger before other header-left content
+      headerEl.insertBefore(hamburgerBtn, headerEl.firstChild)
+    } else {
+      // No header — add a floating hamburger
+      hamburgerBtn.style.cssText = "position: fixed; top: 0.75rem; left: 0.75rem; z-index: 900;"
+      wrapper.appendChild(hamburgerBtn)
+    }
+  }
+
   return { element: wrapper, errors }
 }
 
