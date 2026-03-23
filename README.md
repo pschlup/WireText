@@ -144,25 +144,39 @@ components inside each screen.
 
 ## What Claude can build
 
-67 components across 6 categories — Claude handles the syntax, you just
+67 components across 5 levels — Claude handles the syntax, you just
 describe what you want.
 
-### Compound components (one line = a whole section)
+### Page components (full-page compositions)
 
 | Component              | What it renders                                       |
 |------------------------|-------------------------------------------------------|
+| `hero`                 | Marketing hero with eyebrow, heading, CTA, visual     |
 | `login-form`           | Login page with SSO providers and email/password      |
 | `signup-form`          | Registration page with providers and fields           |
-| `data-table`           | Sortable table with row actions, bulk ops, empty state|
 | `pricing-table`        | Plan comparison cards with highlighted tier           |
-| `settings-form`        | Grouped form sections with a save action              |
-| `hero`                 | Marketing hero with eyebrow, heading, CTA, visual     |
-| `testimonial`          | Quote grid with author attribution                    |
+| `empty-state`          | Zero-state placeholder with icon, heading, action     |
 | `feature-grid`         | Icon + title + description feature cards              |
+| `logo-cloud`           | Logo strip with label                                 |
 | `onboarding-checklist` | Vertical checklist with completed/pending states      |
 | `command-palette`      | Search dialog with keyboard-navigable results         |
-| `empty-state`          | Zero-state placeholder with icon, heading, action     |
-| `file-upload`          | Drag-and-drop upload zone                             |
+
+### Section components (containers and compound panels)
+
+| Component              | What it renders                                       |
+|------------------------|-------------------------------------------------------|
+| `card`                 | Content card with optional title and icon              |
+| `modal`                | Blocking dialog for confirmations                      |
+| `drawer`               | Side panel — left for navigation, right for details    |
+| `data-table`           | Sortable table with row actions, bulk ops, empty state |
+| `settings-form`        | Grouped form sections with a save action               |
+| `testimonial`          | Quote grid with author attribution                     |
+| `file-upload`          | Drag-and-drop upload zone                              |
+| `user-menu`            | Avatar dropdown with menu items                        |
+
+Plus `details`, `action-sheet`, and 22 functional components
+(navigation, data display, feedback), 15 elements (text, buttons,
+icons), and 11 form controls. See `skill/SKILL.md` for the full list.
 
 ### Screens
 
