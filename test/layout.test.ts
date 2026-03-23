@@ -386,3 +386,98 @@ describe("renderLayout — row rendering", () => {
     expect(errors.some(e => e.severity === "error" && e.message.includes("sum to"))).toBe(true)
   })
 })
+
+// ---------------------------------------------------------------------------
+// renderLayout — overlay rendering
+// ---------------------------------------------------------------------------
+describe("renderLayout — overlay rendering", () => {
+  it("overlays are rendered with data-wt-overlay-id attribute", () => {
+    const body: ParsedBody = {
+      zones: new Map([["main", [makeNode("text", "content")]]]),
+      overlays: new Map([["confirm", [makeNode("modal", "Are you sure?")]]]),
+      screens: new Map(),
+      tokens: null,
+    }
+    const { element, errors } = renderLayout(body, 0)
+
+    expect(errors).toHaveLength(0)
+    const overlay = element.querySelector('[data-wt-overlay-id="confirm"]')
+    expect(overlay).not.toBeNull()
+    expect(overlay?.tagName.toLowerCase()).toBe("wa-dialog")
+  })
+
+  it("drawer overlay rendered with data-wt-overlay-id", () => {
+    const body: ParsedBody = {
+      zones: new Map([["main", [makeNode("text", "content")]]]),
+      overlays: new Map([["nav-menu", [makeNode("drawer", "Menu", { fields: ["left"] })]]]),
+      screens: new Map(),
+      tokens: null,
+    }
+    const { element } = renderLayout(body, 0)
+
+    const overlay = element.querySelector('[data-wt-overlay-id="nav-menu"]')
+    expect(overlay).not.toBeNull()
+    expect(overlay?.tagName.toLowerCase()).toBe("wa-drawer")
+    expect(overlay?.getAttribute("placement")).toBe("start")
+  })
+
+  it("right drawer overlay does NOT auto-inject hamburger", () => {
+    const body: ParsedBody = {
+      zones: new Map([
+        ["header", [makeNode("logo", "App")]],
+        ["main",   [makeNode("text", "content")]],
+      ]),
+      overlays: new Map([["detail", [makeNode("drawer", "Detail", { fields: ["right"] })]]]),
+      screens: new Map(),
+      tokens: null,
+    }
+    const { element } = renderLayout(body, 0)
+
+    const hamburger = element.querySelector('[data-wt-drawer-toggle]')
+    expect(hamburger).toBeNull()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// renderLayout — left drawer auto-hamburger
+// ---------------------------------------------------------------------------
+describe("renderLayout — left drawer auto-hamburger", () => {
+  it("left drawer overlay auto-injects hamburger into header-left", () => {
+    const left  = makeNode("left",  "", { children: [makeNode("logo", "App")] })
+    const right = makeNode("right", "", { children: [makeNode("button", "Sign in")] })
+    const body: ParsedBody = {
+      zones: new Map([
+        ["header", [left, right]],
+        ["main",   [makeNode("text", "content")]],
+      ]),
+      overlays: new Map([["nav-menu", [makeNode("drawer", "Navigation", { fields: ["left"] })]]]),
+      screens: new Map(),
+      tokens: null,
+    }
+    const { element } = renderLayout(body, 0)
+
+    const hamburger = element.querySelector('[data-wt-drawer-toggle="nav-menu"]')
+    expect(hamburger).not.toBeNull()
+    expect(hamburger?.getAttribute("name")).toBe("list")
+    // Should be in the header-left area
+    const headerLeft = element.querySelector(".wt-header-left")
+    expect(headerLeft?.contains(hamburger!)).toBe(true)
+    // Should be the FIRST child (prepended before logo)
+    expect(headerLeft?.firstElementChild).toBe(hamburger)
+  })
+
+  it("left drawer with no header → floating hamburger", () => {
+    const body: ParsedBody = {
+      zones: new Map([["main", [makeNode("text", "content")]]]),
+      overlays: new Map([["side-nav", [makeNode("drawer", "Nav", { fields: ["left"] })]]]),
+      screens: new Map(),
+      tokens: null,
+    }
+    const { element } = renderLayout(body, 0)
+
+    const hamburger = element.querySelector('[data-wt-drawer-toggle="side-nav"]')
+    expect(hamburger).not.toBeNull()
+    // Should have fixed positioning
+    expect((hamburger as HTMLElement)?.style.position).toBe("fixed")
+  })
+})

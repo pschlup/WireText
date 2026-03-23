@@ -154,6 +154,15 @@ describe("INTERACTION_JS", () => {
     // The sidebar nav update logic queries .wt-nav-item elements.
     expect(INTERACTION_JS).toContain("wt-nav-item")
   })
+
+  it("handles data-wt-drawer-toggle for hamburger drawer toggling", () => {
+    expect(INTERACTION_JS).toContain("data-wt-drawer-toggle")
+  })
+
+  it("drawer toggle opens overlay if closed, closes if open", () => {
+    // The click handler checks currentOverlay === drawerEl to decide toggle direction.
+    expect(INTERACTION_JS).toMatch(/drawer-toggle[\s\S]*?currentOverlay === drawerEl/)
+  })
 })
 
 // ── renderDocument ─────────────────────────────────────────────────────────────

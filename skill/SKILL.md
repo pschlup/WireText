@@ -76,85 +76,23 @@ Types: `macro`, `theme`, `screen`, `journey`. The `---` separator is always requ
 
 Use ONLY these components. Anything else is invalid.
 
-### Primitives (14)
+Components are organized by hierarchy level: page-level compositions at the top, down to atomic elements at the bottom. When building wireframes, work top-down: start with page-level components for the overall structure, add sections to organize content, use components for functionality, and fill in with elements and form fields.
 
-| Component  | Syntax                            | Notes                              |
-|------------|-----------------------------------|------------------------------------|
-| `text`     | `text content`                    |                                    |
-| `heading`  | `heading Title \| level`          | level 1-6, default 2              |
-| `subtext`  | `subtext content`                 | secondary/muted text               |
-| `link`     | `link label \| url`               | external `<a href>`; OR use `-> target` for internal nav (mutually exclusive) |
-| `button`   | `button label`                    | `+` = primary, `~icon` prefix     |
-| `badge`    | `badge label \| variant`          | variants: success, warning, danger, neutral |
-| `avatar`   | `avatar Name`                     |                                    |
-| `icon`     | `icon ~icon-name`                 | standalone Phosphor icon           |
-| `divider`  | `divider`                         | horizontal rule                    |
-| `spacer`   | `spacer`                          | vertical whitespace                |
-| `progress` | `progress current \| total`       | step indicator                     |
-| `tag`      | `tag label \| variant`            | like badge but inline              |
-| `item`     | `item text \| context-field`      | ONLY valid inside tree, kanban, or feed |
-| `code`     | `code content \| language`        | monospace code block with optional language label (js, ts, bash, etc.) |
+### Page (9) -- full-page compositions
 
-### Form (11)
+Page components occupy an entire screen or large section. They use `.slot` syntax for configuration. Place them directly in a zone or as the main content of a screen.
 
-| Component    | Syntax                            | Notes                              |
-|--------------|-----------------------------------|------------------------------------|
-| `input`      | `input Label \| placeholder`      | `*` = password type                |
-| `select`     | `select Label \| opt1, opt2`      |                                    |
-| `checkbox`   | `checkbox Label`                  | `*` = checked                      |
-| `radio`      | `radio Group \| opt1, opt2`       |                                    |
-| `toggle`     | `toggle Label`                    | `*` = on                           |
-| `textarea`   | `textarea Label \| placeholder`   |                                    |
-| `datepicker` | `datepicker Label`                |                                    |
-| `search`     | `search placeholder`              |                                    |
-| `slider`     | `slider Label \| min, max`        |                                    |
-| `rating`     | `rating Label`                    |                                    |
-| `combobox`   | `combobox Label \| placeholder`   | searchable dropdown                |
-
-### Data (10)
-
-| Component    | Syntax                            | Notes                              |
-|--------------|-----------------------------------|------------------------------------|
-| `table`      | `table Title \| col1, col2`       | static read-only                   |
-| `pagination` | `pagination \| total \| current`  | or just `pagination`               |
-| `stat`       | `stat Label \| value \| delta`    | `+` delta = green, `-` = red       |
-| `chart`      | `chart Title \| type`             | types: line, bar, pie, donut, area |
-| `feed`       | `feed Title`                      | children are `item` lines          |
-| `kanban`     | `kanban Title \| col1, col2`      | children are `item` lines          |
-| `calendar`   | `calendar Title \| view`          | views: month, week, day            |
-| `skeleton`   | `skeleton \| count`               | placeholder loading                |
-| `timeline`   | `timeline Title`                  | children are `item` lines; `*` = current step; first field = metadata |
-| `metric`     | `metric Label \| value \| delta \| chart-type` | stat card with sparkline; chart-type: line, area, bar |
-
-### Navigation (9)
-
-| Component    | Syntax                            | Notes                              |
-|--------------|-----------------------------------|------------------------------------|
-| `logo`       | `logo ~icon Brand`                |                                    |
-| `nav`        | `nav Item1* \| Item2 \| Item3`    | `\|` separates items, `*` = active |
-| `tabs`       | `tabs Tab1* \| Tab2 \| Tab3`      | same as nav                        |
-| `breadcrumb` | `breadcrumb Home \| Section`      | last item = current (no transition)|
-| `hamburger`  | `hamburger`                       | mobile menu icon                   |
-| `tree`       | `tree Label`                      | children are nested `item` lines   |
-| `stepper`    | `stepper Step 1 \| Step 2* \| Step 3` | `*` = current step; completed steps shown with checkmark |
-| `filter-bar` | `filter-bar All* \| Active \| Archived` | `\|` separates filter options; `*` = selected; `+N` = count badge |
-| `bottom-nav` | `bottom-nav ~house Home* \| ~folder Files \| ~user Profile` | mobile bottom navigation; `~icon` prefix on each item |
-
-### Containers (9)
-
-| Component      | Syntax                            | Notes                              |
-|----------------|-----------------------------------|------------------------------------|
-| `card`         | `card Title`                      | children = content                 |
-| `modal`        | `modal Title`                     | for blocking confirmations         |
-| `drawer`       | `drawer Title`                    | for non-blocking panels            |
-| `alert`        | `alert Message \| variant`        | variants: success, warning, danger, neutral |
-| `toast`        | `toast Message \| variant`        |                                    |
-| `tooltip`      | `tooltip Text`                    |                                    |
-| `callout`      | `callout Message \| variant`      |                                    |
-| `details`      | `details Summary`                 | children = expandable content      |
-| `action-sheet` | `action-sheet Title`              | mobile bottom sheet; children = button list |
-
-### Compound (14)
+#### hero
+```
+hero
+  .eyebrow Open Beta
+  .heading Build faster with WireText
+  .subtext Turn ideas into interactive prototypes in minutes.
+  .actions
+    button Get started free+ -> signup
+    button View demo -> demo
+  .visual dashboard-screenshot
+```
 
 #### login-form
 ```
@@ -188,65 +126,6 @@ empty-state
   .heading No items yet
   .text Create your first item to get started
   .action Create item+ -> target
-```
-
-#### user-menu
-```
-user-menu
-  .avatar Alice Chen
-  .items Profile -> profile, Settings -> settings, ---, Log out -> logout
-```
-
-#### data-table
-```
-data-table
-  .select
-  .columns Name, Status, Owner, Updated
-  .row Acme Corp -> detail | Active* | Alice | 2h ago
-  .row Globex Inc -> detail | Pending | Bob | 1d ago
-  .actions View -> detail, Edit -> edit, Delete -> #confirm
-  .bulk-actions Delete, Export
-  .empty ~folder No records found
-```
-
-#### settings-form
-```
-settings-form
-  .section General
-    input Full Name
-    input Email
-    toggle Notifications
-  .section Security
-    input Password* | --------
-    checkbox Two-factor authentication*
-  .action Save changes+
-```
-
-#### file-upload
-```
-file-upload
-  .text Drag and drop files here, or click to browse
-  .accept .pdf, .docx, .xlsx
-```
-
-#### hero
-```
-hero
-  .eyebrow Open Beta
-  .heading Build faster with WireText
-  .subtext Turn ideas into interactive prototypes in minutes.
-  .actions
-    button Get started free+ -> signup
-    button View demo -> demo
-  .visual dashboard-screenshot
-```
-
-#### testimonial
-```
-testimonial
-  .quote Great tool for rapid prototyping. | Alice Chen | Head of Design at Acme
-  .quote Cut our design review cycles in half. | Bob Smith | PM at Globex
-  .quote Our team adopted it instantly. | Carol Jones | CTO at Initech
 ```
 
 #### feature-grid
@@ -285,6 +164,146 @@ command-palette
   .result ~plus Create new project -> new-project
   .footer ↵ to select · Esc to close
 ```
+
+### Section (10) -- containers and compound panels
+
+Section components group and contain other components. They define a bounded area of the UI. Simple containers use children directly; compound sections use `.slot` syntax.
+
+| Component      | Syntax                            | Notes                              |
+|----------------|-----------------------------------|------------------------------------|
+| `card`         | `card Title`                      | children = content                 |
+| `modal`        | `modal Title`                     | for blocking confirmations; shown via `-> #overlay-id` |
+| `drawer`       | `drawer Title \| side`            | side: `left` (nav, auto-hamburger) or `right` (detail panel, default); shown via `-> #overlay-id` |
+| `details`      | `details Summary`                 | children = expandable content      |
+| `action-sheet` | `action-sheet Title`              | mobile bottom sheet; children = button list |
+
+#### data-table
+```
+data-table
+  .select
+  .columns Name, Status, Owner, Updated
+  .row Acme Corp -> detail | Active* | Alice | 2h ago
+  .row Globex Inc -> detail | Pending | Bob | 1d ago
+  .actions View -> detail, Edit -> edit, Delete -> #confirm
+  .bulk-actions Delete, Export
+  .empty ~folder No records found
+```
+
+#### settings-form
+```
+settings-form
+  .section General
+    input Full Name
+    input Email
+    toggle Notifications
+  .section Security
+    input Password* | --------
+    checkbox Two-factor authentication*
+  .action Save changes+
+```
+
+#### file-upload
+```
+file-upload
+  .text Drag and drop files here, or click to browse
+  .accept .pdf, .docx, .xlsx
+```
+
+#### testimonial
+```
+testimonial
+  .quote Great tool for rapid prototyping. | Alice Chen | Head of Design at Acme
+  .quote Cut our design review cycles in half. | Bob Smith | PM at Globex
+  .quote Our team adopted it instantly. | Carol Jones | CTO at Initech
+```
+
+#### user-menu
+```
+user-menu
+  .avatar Alice Chen
+  .items Profile -> profile, Settings -> settings, ---, Log out -> logout
+```
+
+### Component (22) -- functional UI components
+
+Components are the building blocks of screens: navigation, data display, and feedback. They render self-contained functional UI but don't define page structure.
+
+#### Navigation
+
+| Component    | Syntax                            | Notes                              |
+|--------------|-----------------------------------|------------------------------------|
+| `logo`       | `logo ~icon Brand`                |                                    |
+| `nav`        | `nav Item1* \| Item2 \| Item3`    | `\|` separates items, `*` = active |
+| `tabs`       | `tabs Tab1* \| Tab2 \| Tab3`      | same as nav                        |
+| `breadcrumb` | `breadcrumb Home \| Section`      | last item = current (no transition)|
+| `stepper`    | `stepper Step 1 \| Step 2* \| Step 3` | `*` = current step; completed steps shown with checkmark |
+| `filter-bar` | `filter-bar All* \| Active \| Archived` | `\|` separates filter options; `*` = selected; `+N` = count badge |
+| `bottom-nav` | `bottom-nav ~house Home* \| ~folder Files \| ~user Profile` | mobile bottom navigation; `~icon` prefix on each item |
+| `tree`       | `tree Label`                      | children are nested `item` lines   |
+
+#### Data display
+
+| Component    | Syntax                            | Notes                              |
+|--------------|-----------------------------------|------------------------------------|
+| `table`      | `table Title \| col1, col2`       | static read-only                   |
+| `pagination` | `pagination \| total \| current`  | or just `pagination`               |
+| `stat`       | `stat Label \| value \| delta`    | `+` delta = green, `-` = red       |
+| `chart`      | `chart Title \| type`             | types: line, bar, pie, donut, area |
+| `feed`       | `feed Title`                      | children are `item` lines          |
+| `kanban`     | `kanban Title \| col1, col2`      | children are `item` lines          |
+| `calendar`   | `calendar Title \| view`          | views: month, week, day            |
+| `skeleton`   | `skeleton \| count`               | placeholder loading                |
+| `timeline`   | `timeline Title`                  | children are `item` lines; `*` = current step; first field = metadata |
+| `metric`     | `metric Label \| value \| delta \| chart-type` | stat card with sparkline; chart-type: line, area, bar |
+
+#### Feedback
+
+| Component  | Syntax                          | Notes                              |
+|------------|---------------------------------|------------------------------------|
+| `alert`    | `alert Message \| variant`      | variants: success, warning, danger, neutral |
+| `toast`    | `toast Message \| variant`      |                                    |
+| `callout`  | `callout Message \| variant`    |                                    |
+| `tooltip`  | `tooltip Text`                  |                                    |
+
+### Element (15) -- atomic building blocks
+
+Elements are the smallest UI atoms: text, buttons, icons, dividers. They cannot contain other components (except via nesting rules like `item` inside feed/kanban/tree).
+
+| Component  | Syntax                            | Notes                              |
+|------------|-----------------------------------|------------------------------------|
+| `text`     | `text content`                    |                                    |
+| `heading`  | `heading Title \| level`          | level 1-6, default 2              |
+| `subtext`  | `subtext content`                 | secondary/muted text               |
+| `link`     | `link label \| url`               | external `<a href>`; OR use `-> target` for internal nav (mutually exclusive) |
+| `button`   | `button label`                    | `+` = primary, `~icon` prefix     |
+| `badge`    | `badge label \| variant`          | variants: success, warning, danger, neutral |
+| `avatar`   | `avatar Name`                     |                                    |
+| `icon`     | `icon ~icon-name`                 | standalone Phosphor icon           |
+| `divider`  | `divider`                         | horizontal rule                    |
+| `spacer`   | `spacer`                          | vertical whitespace                |
+| `progress` | `progress current \| total`       | step indicator                     |
+| `tag`      | `tag label \| variant`            | like badge but inline              |
+| `code`     | `code content \| language`        | monospace code block with optional language label (js, ts, bash, etc.) |
+| `item`     | `item text \| context-field`      | ONLY valid inside tree, kanban, feed, or timeline |
+| `hamburger`| `hamburger`                       | menu icon; auto-injected for left drawers |
+
+### Form (11) -- input controls
+
+Form elements capture user input. They are element-level but grouped separately because forms are a distinct design concern. Use inside `settings-form .section`, `card`, or directly in a zone.
+
+| Component    | Syntax                            | Notes                              |
+|--------------|-----------------------------------|------------------------------------|
+| `input`      | `input Label \| placeholder`      | `*` = password type                |
+| `select`     | `select Label \| opt1, opt2`      |                                    |
+| `checkbox`   | `checkbox Label`                  | `*` = checked                      |
+| `radio`      | `radio Group \| opt1, opt2`       |                                    |
+| `toggle`     | `toggle Label`                    | `*` = on                           |
+| `textarea`   | `textarea Label \| placeholder`   |                                    |
+| `datepicker` | `datepicker Label`                |                                    |
+| `search`     | `search placeholder`              |                                    |
+| `slider`     | `slider Label \| min, max`        |                                    |
+| `rating`     | `rating Label`                    |                                    |
+| `combobox`   | `combobox Label \| placeholder`   | searchable dropdown                |
 
 ## DSL Syntax Rules
 
@@ -437,6 +456,8 @@ Rules:
 - `-> !close` dismisses the overlay
 - `-> screen-id` from inside an overlay dismisses it and navigates
 - One overlay visible at a time (no stacking)
+- Left drawers (`drawer Title | left`) auto-inject a hamburger trigger in the header
+- Right drawers (`drawer Title` or `drawer Title | right`) are opened by explicit `-> #overlay-id` on buttons or links
 
 ## Domain Templates
 
@@ -623,7 +644,7 @@ screen: choose-plan
 3. Start simple -- `@main` only (no explicit zone labels) unless the user asks for sidebar, header, or multi-zone layout. When they want an "app" with navigation, use macros for the shell.
 4. Prefer compound components (login-form, data-table, pricing-table, settings-form, empty-state) over assembling primitives manually.
 5. Use `data-table` (compound) when rows need actions, selection, or bulk operations. Use `table` for static read-only data.
-6. Use `modal` for destructive confirmations. Use `drawer` for non-blocking panels (filters, settings, notifications).
+6. Use `modal` for destructive confirmations. Use `drawer | left` for navigation drawers (auto-gets hamburger trigger). Use `drawer | right` (or just `drawer`) for contextual detail panels triggered by buttons/links.
 7. Generate 3-5 `.row` entries in data-table. 2-4 `item` lines per kanban column. 3-5 `item` lines in feed.
 8. For `chart`, pick type by context: line for trends over time, bar for comparisons, pie/donut for breakdowns.
 9. `heading | level` sets HTML heading level (1-6), NOT a count. Use `badge` for counts.
@@ -644,7 +665,7 @@ Before presenting output, silently verify and fix:
 - [ ] `item` only appears inside tree, kanban, feed, or timeline
 - [ ] `link | url` and `-> target` are never both on the same link
 - [ ] External URL transitions (`-> https://...`) open in a new tab — do not use for same-app navigation
-- [ ] `modal` for blocking decisions, `drawer` for non-blocking panels
+- [ ] `modal` for blocking decisions, `drawer | left` for nav panels, `drawer` or `drawer | right` for detail panels
 - [ ] Screen bodies are under 30 lines
 - [ ] No Lorem ipsum -- all placeholder data is realistic
 - [ ] Overlay `#id` blocks are at indent level 0 after main content

@@ -212,8 +212,23 @@ export const INTERACTION_JS: string = /* javascript */ `
   document.addEventListener('click', function (e) {
     var node = e.target;
 
-    // Walk up the DOM looking for the nearest element with data-wt-transition.
+    // Walk up the DOM looking for the nearest interactive attribute.
     while (node && node !== document) {
+      // Drawer toggle: hamburger buttons for left drawers (toggle open/close).
+      var toggleId = node.getAttribute && node.getAttribute('data-wt-drawer-toggle');
+      if (toggleId) {
+        e.preventDefault();
+        var drawerEl = findOverlay(toggleId);
+        if (drawerEl) {
+          if (currentOverlay === drawerEl) {
+            closeCurrentOverlay();
+          } else {
+            openOverlay(toggleId);
+          }
+        }
+        return;
+      }
+
       var raw = node.getAttribute && node.getAttribute('data-wt-transition');
       if (raw) {
         try {

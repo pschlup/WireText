@@ -59,14 +59,24 @@ COMPONENT_REGISTRY.set("modal", (node: ComponentNode, ctx: RenderContext): Rende
 
 // ---------------------------------------------------------------------------
 // drawer — <wa-drawer> hidden by default
+// fields[0] = "left" | "right" (default "right")
+// Left drawers use placement="start", right drawers use placement="end".
 // ---------------------------------------------------------------------------
 COMPONENT_REGISTRY.set("drawer", (node: ComponentNode, ctx: RenderContext): RenderResult => {
   const errors: ParseError[] = []
   const el = document.createElement("wa-drawer")
 
   if (node.text) el.setAttribute("label", node.text)
-  // Placement defaults to end (right side) — standard drawer behaviour
-  el.setAttribute("placement", "end")
+
+  // Determine placement from fields[0]: "left" → start, "right" or default → end
+  const side = (node.fields[0] ?? "").toLowerCase().trim()
+  if (side === "left" || side === "start") {
+    el.setAttribute("placement", "start")
+    el.setAttribute("data-wt-drawer-side", "left")
+  } else {
+    el.setAttribute("placement", "end")
+    el.setAttribute("data-wt-drawer-side", "right")
+  }
   // Hidden by default — no `open` attribute
 
   renderChildren(node, el, ctx, errors)
