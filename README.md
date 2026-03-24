@@ -257,7 +257,7 @@ readable enough to scan and suggest edits in plain language.
 | `.slot` | named slot inside a compound component             |
 | `@zone` | layout zone (`@header`, `@sidebar`, `@main`, `@aside`, `@footer`) |
 
-See [PROJECT.md](./PROJECT.md) for the complete language specification.
+See [skill/SKILL.md](./skill/SKILL.md) for the complete language specification.
 
 ---
 
@@ -295,7 +295,7 @@ navigation JS, overlay system, WebAwesome components, Phosphor icons,
 and theme CSS — no server required, no external assets at build time.
 
 **For AI systems building WireText generators or renderers:**
-[PROJECT.md](./PROJECT.md) is the authoritative technical specification.
+[skill/SKILL.md](./skill/SKILL.md) is the authoritative technical specification.
 It defines the block format, all 67 components, layout zones, macro
 composition, theme resolution, overlay system, and generation guidelines.
 
